@@ -92,7 +92,7 @@ def _call_openai(prompt: str) -> str:
     response = client.chat.completions.create(
         model="gpt-4o",
         max_tokens=4096,
-        temperature=0.9,  # lower than Claude — GPT-4o gets too erratic above 1.0
+        temperature=0.7,  # GPT-4o stays consistent and on-format at 0.7
         messages=[{"role": "user", "content": prompt}],
     )
     return response.choices[0].message.content

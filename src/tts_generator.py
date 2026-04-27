@@ -44,7 +44,7 @@ def _elevenlabs_synthesise(text: str, voice_id: str, api_key: str) -> AudioSegme
             "text": text,
             "model_id": ELEVENLABS_MODEL,
             "language_code": "en",
-            "voice_settings": {"stability": 0.4, "similarity_boost": 0.75, "style": 0.3},
+            "voice_settings": {"stability": 0.75, "similarity_boost": 0.90, "style": 0.2},
         },
         timeout=30,
     )
