@@ -1,4 +1,5 @@
 import asyncio
+import io
 import os
 import random
 import re
@@ -6,6 +7,7 @@ import tempfile
 import time
 from pathlib import Path
 
+import requests
 import static_ffmpeg
 static_ffmpeg.add_paths()
 
@@ -17,29 +19,77 @@ from models import AudioOutput, DialogueLine, PodcastScript, PodcastSettings
 OUTPUTS_DIR = Path(__file__).parent.parent / "test_audio"
 OUTPUTS_DIR.mkdir(exist_ok=True)
 
-HOST_A_VOICE = "en-GB-SoniaNeural"   # Alex — British female
-HOST_B_VOICE = "en-US-GuyNeural"     # Sam — American male
+HOST_A_VOICE = "Social Media"        # Alex — ElevenLabs voice (falls back to SoniaNeural)
+HOST_B_VOICE = "en-US-GuyNeural"     # Sam — American male (edge-tts)
+HOST_A_FALLBACK = "en-GB-SoniaNeural"
 
+ELEVENLABS_API_BASE = "https://api.elevenlabs.io/v1"
+
+
+# ── ElevenLabs helpers ────────────────────────────────────────────────────────
+
+def _get_elevenlabs_voice_id(name: str, api_key: str) -> str | None:
+    """Look up an ElevenLabs voice ID by display name."""
+    resp = requests.get(
+        f"{ELEVENLABS_API_BASE}/voices",
+        headers={"xi-api-key": api_key},
+        timeout=10,
+    )
+    if resp.status_code != 200:
+        return None
+    for voice in resp.json().get("voices", []):
+        if voice["name"].lower() == name.lower():
+            return voice["voice_id"]
+    return None
+
+
+def _elevenlabs_synthesise(text: str, voice_id: str, api_key: str) -> AudioSegment:
+    """Call ElevenLabs TTS and return an AudioSegment."""
+    resp = requests.post(
+        f"{ELEVENLABS_API_BASE}/text-to-speech/{voice_id}",
+        headers={
+            "xi-api-key": api_key,
+            "Content-Type": "application/json",
+            "Accept": "audio/mpeg",
+        },
+        json={
+            "text": text,
+            "model_id": "eleven_multilingual_v2",
+            "voice_settings": {"stability": 0.4, "similarity_boost": 0.75, "style": 0.3},
+        },
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return AudioSegment.from_mp3(io.BytesIO(resp.content))
+
+
+# Cache the voice ID so we only look it up once per session
+_elevenlabs_voice_id_cache: dict[str, str] = {}
+
+
+def _get_cached_voice_id(name: str, api_key: str) -> str | None:
+    if name not in _elevenlabs_voice_id_cache:
+        vid = _get_elevenlabs_voice_id(name, api_key)
+        if vid:
+            _elevenlabs_voice_id_cache[name] = vid
+    return _elevenlabs_voice_id_cache.get(name)
+
+
+# ── Prosody & pause helpers (edge-tts only) ───────────────────────────────────
 
 def _prosody_params(text: str) -> dict:
-    """Pick rate and pitch based on emotional content of the line."""
     t = text.lower().strip()
     if text.strip().endswith("?"):
-        # Questions — higher pitch, slightly slower
         return {"rate": "-8%", "pitch": "+10Hz"}
     if any(w in t for w in ["wow", "wild", "incredible", "seriously", "no way",
                               "come on", "exactly", "that's it", "brilliant"]):
-        # Excited / emphatic
         return {"rate": "+10%", "pitch": "+8Hz"}
     if any(w in t for w in ["honestly", "genuinely", "actually", "i don't know",
                               "i'm not sure", "i'll be honest", "hard to say"]):
-        # Thoughtful / uncertain — slower and lower
         return {"rate": "-12%", "pitch": "-6Hz"}
     if any(w in t for w in ["never", "always", "critical", "fundamental",
                               "the real question", "here's the thing"]):
-        # Emphatic statement
         return {"rate": "-5%", "pitch": "+4Hz"}
-    # Default — slightly slower than neutral for warmth
     return {"rate": "-5%", "pitch": "+0Hz"}
 
 
@@ -48,18 +98,19 @@ def _pause_ms(prev: DialogueLine | None, current: DialogueLine, idx: int) -> int
         return 500
     prev_text = prev.text.rstrip()
     if prev_text.endswith("?"):
-        return random.randint(300, 500)       # quick response to a question
+        return random.randint(300, 500)
     if len(current.text.split()) < 8:
-        return random.randint(350, 600)       # short reaction jumped in
+        return random.randint(350, 600)
     if idx > 0 and idx % 5 == 0:
-        return random.randint(1000, 1600)     # topic breath
+        return random.randint(1000, 1600)
     if len(prev_text.split()) > 35:
-        return random.randint(700, 1000)      # long statement needs a beat
-    return random.randint(500, 850)           # default natural gap
+        return random.randint(700, 1000)
+    return random.randint(500, 850)
 
 
-async def _synthesise_segment(text: str, voice: str, params: dict) -> AudioSegment:
-    """Generate one TTS segment from a chunk of text."""
+# ── Segment synthesis ─────────────────────────────────────────────────────────
+
+async def _edge_segment(text: str, voice: str, params: dict) -> AudioSegment:
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
         tmp_path = tmp.name
     try:
@@ -74,28 +125,43 @@ async def _synthesise_segment(text: str, voice: str, params: dict) -> AudioSegme
         os.unlink(tmp_path)
 
 
-async def _synthesise_one(line: DialogueLine, voice: str) -> AudioSegment:
-    """
-    Split a dialogue line at em-dashes and ellipses so those markers
-    become real silence in the audio, then stitch the sub-segments.
-    """
+def _eleven_segment(text: str, voice_id: str, api_key: str) -> AudioSegment:
+    return _elevenlabs_synthesise(text, voice_id, api_key)
+
+
+async def _synthesise_one(
+    line: DialogueLine,
+    use_elevenlabs: bool,
+    elevenlabs_voice_id: str | None,
+    elevenlabs_api_key: str | None,
+) -> AudioSegment:
+    parts = re.split(r"(\s*—\s*|\.\.\.)", line.text)
     params = _prosody_params(line.text)
 
-    # Split at em-dashes (400ms pause) and ellipses (700ms pause)
-    parts = re.split(r"(\s*—\s*|\.\.\.)", line.text)
+    structure = []
+    audio_chunks = []
 
-    tasks = []
-    structure = []   # list of ("audio"|"pause", value)
     for part in parts:
         stripped = part.strip()
         if stripped in ("—", "...") or re.fullmatch(r"\s*—\s*", part):
             ms = 700 if "..." in part else 420
             structure.append(("pause", ms))
         elif stripped:
-            structure.append(("audio", len(tasks)))
-            tasks.append(_synthesise_segment(stripped, voice, params))
+            structure.append(("audio", len(audio_chunks)))
+            audio_chunks.append(stripped)
 
-    segments = await asyncio.gather(*tasks)
+    if use_elevenlabs and elevenlabs_voice_id and elevenlabs_api_key:
+        # ElevenLabs is synchronous — run in executor to avoid blocking
+        loop = asyncio.get_event_loop()
+        segments = await asyncio.gather(*[
+            loop.run_in_executor(None, _eleven_segment, chunk, elevenlabs_voice_id, elevenlabs_api_key)
+            for chunk in audio_chunks
+        ])
+    else:
+        segments = await asyncio.gather(*[
+            _edge_segment(chunk, HOST_A_FALLBACK, params)
+            for chunk in audio_chunks
+        ])
 
     combined = AudioSegment.empty()
     for kind, value in structure:
@@ -103,27 +169,63 @@ async def _synthesise_one(line: DialogueLine, voice: str) -> AudioSegment:
             combined += AudioSegment.silent(duration=value)
         else:
             combined += segments[value]
-
     return combined
 
 
-async def _synthesise_all(lines: list[DialogueLine], host_a: str) -> list[AudioSegment]:
-    tasks = [
-        _synthesise_one(
-            line,
-            HOST_A_VOICE if line.host_name.capitalize() == host_a else HOST_B_VOICE,
-        )
-        for line in lines
-    ]
+async def _synthesise_all(
+    lines: list[DialogueLine],
+    host_a: str,
+    elevenlabs_voice_id: str | None,
+    elevenlabs_api_key: str | None,
+) -> list[AudioSegment]:
+    tasks = []
+    for line in lines:
+        is_host_a = line.host_name.capitalize() == host_a
+        if is_host_a:
+            tasks.append(_synthesise_one(line, True, elevenlabs_voice_id, elevenlabs_api_key))
+        else:
+            # Sam — always edge-tts
+            parts = re.split(r"(\s*—\s*|\.\.\.)", line.text)
+            params = _prosody_params(line.text)
+            structure, chunks = [], []
+            for part in parts:
+                s = part.strip()
+                if s in ("—", "...") or re.fullmatch(r"\s*—\s*", part):
+                    structure.append(("pause", 700 if "..." in part else 420))
+                elif s:
+                    structure.append(("audio", len(chunks)))
+                    chunks.append(s)
+
+            async def _sam_line(structure=structure, chunks=chunks, params=params):
+                segs = await asyncio.gather(*[_edge_segment(c, HOST_B_VOICE, params) for c in chunks])
+                out = AudioSegment.empty()
+                for kind, val in structure:
+                    out += AudioSegment.silent(duration=val) if kind == "pause" else segs[val]
+                return out
+
+            tasks.append(_sam_line())
+
     return await asyncio.gather(*tasks)
 
+
+# ── Public entry point ────────────────────────────────────────────────────────
 
 def synthesise_script(script: PodcastScript, settings: PodcastSettings) -> AudioOutput:
     host_a = settings.host_a_name.capitalize()
 
+    # Resolve ElevenLabs voice for Alex
+    api_key = os.environ.get("ELEVENLABS_API_KEY", "")
+    voice_id = None
+    if api_key:
+        voice_id = _get_cached_voice_id(HOST_A_VOICE, api_key)
+        if not voice_id:
+            print(f"[tts] ElevenLabs voice '{HOST_A_VOICE}' not found — falling back to {HOST_A_FALLBACK}")
+
     loop = asyncio.new_event_loop()
     try:
-        segments = loop.run_until_complete(_synthesise_all(script.lines, host_a))
+        segments = loop.run_until_complete(
+            _synthesise_all(script.lines, host_a, voice_id, api_key or None)
+        )
     finally:
         loop.close()
 
