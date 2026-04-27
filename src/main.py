@@ -1,3 +1,6 @@
+# QUALITY: 7/10
+# Strengths: clean Gradio layout, run logging, rating system, content guard integrated
+# Improve: split UI and pipeline logic into separate files, add input validation before pipeline call
 import csv
 import json
 import os

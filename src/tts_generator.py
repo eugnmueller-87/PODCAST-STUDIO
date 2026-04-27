@@ -1,3 +1,6 @@
+# QUALITY: 8/10
+# Strengths: parallel asyncio, emotional prosody, mid-sentence silences, ElevenLabs + edge-tts hybrid
+# Improve: add ElevenLabs retry on 429, extract Sam synthesis into its own function, add audio normalisation
 import asyncio
 import io
 import os

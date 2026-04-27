@@ -1,3 +1,6 @@
+# QUALITY: 7/10
+# Strengths: clean handler dispatch, covers all 4 source types, good error messages
+# Improve: add URL timeout retry, cap extracted text length, PDF title from metadata not path
 import re
 import requests
 from bs4 import BeautifulSoup

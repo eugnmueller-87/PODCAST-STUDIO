@@ -1,3 +1,6 @@
+# QUALITY: 9/10
+# Strengths: clean dataclasses, clear separation of concerns, enum for type safety
+# Improve: add field validation (e.g. word_count > 0), consider Pydantic for auto-validation
 from dataclasses import dataclass, field
 from enum import Enum
 

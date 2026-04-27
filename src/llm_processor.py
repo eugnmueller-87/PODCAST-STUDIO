@@ -1,3 +1,6 @@
+# QUALITY: 8/10
+# Strengths: clean prompt templating, solid regex parser, safety checks at both ends
+# Improve: handle API rate limit / retry, stream response for long scripts, add token count logging
 import os
 import re
 from pathlib import Path

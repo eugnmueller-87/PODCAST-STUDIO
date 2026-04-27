@@ -1,3 +1,6 @@
+# QUALITY: 8/10
+# Strengths: two-layer defence (fast regex + AI classifier), clean public API, blocked runs logged
+# Improve: add more regex patterns for non-English slurs, cache Claude result per content hash
 """
 Content safety guard — blocks racism, hate speech, and foul language
 from entering the pipeline or appearing in generated scripts.

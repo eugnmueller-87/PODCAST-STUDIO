@@ -1,3 +1,6 @@
+# QUALITY: 7/10
+# Strengths: probability-based layering, Sam humour is distinct and context-aware
+# Improve: avoid stacking multiple injections on one line, add unit tests for each layer
 import random
 import re
 
