@@ -77,6 +77,7 @@ podcast-studio/
 │   ├── data_processor.py   # Input handlers: PDF, URL, YouTube, text
 │   ├── llm_processor.py    # Claude script generation (Anthropic API)
 │   ├── humanizer.py        # Post-generation realism layer (reactions, humour)
+│   ├── content_guard.py    # Safety guard — blocks hate speech, racism, foul language
 │   ├── tts_generator.py    # edge-tts + prosody + pydub audio stitching
 │   └── main.py             # Gradio UI, run logger, rating saver
 ├── prompts/
@@ -295,6 +296,40 @@ All lines are synthesised **in parallel** via `asyncio.gather()` — a 20-line e
 
 ---
 
+### Security — Content Safety Guard (`src/content_guard.py`)
+
+All content passes through a two-layer safety check **before** reaching Claude and **after** the script is generated.
+
+**Layer 1 — Keyword regex** (instant, no API call)
+Compiled regex patterns catch obvious slurs, hate phrases, and calls for violence immediately.
+
+**Layer 2 — Claude Haiku classifier** (`temperature=0`, ~60 tokens)
+Detects subtle and contextual violations that a keyword list would miss — coded language, implied discrimination, targeted abuse.
+
+**What is blocked:**
+- Racism and racial slurs
+- Hate speech targeting any group (religion, gender, sexuality, ethnicity, nationality, disability)
+- Calls for violence or discrimination
+- Severe foul or abusive language intended to demean
+
+**Two checkpoints:**
+1. Source input — checked before anything is sent to Claude
+2. Generated script — checked after humanization, before audio is made
+
+**On violation**, the UI shows:
+```
+🚫 Content Blocked
+
+Content blocked in source input: Contains a racial slur targeting [group].
+
+PodcastIQ does not process content that contains racism, hate speech,
+foul language, or discrimination of any kind.
+```
+
+Blocked attempts are logged to `run_log.jsonl` with `"status": "blocked"`.
+
+---
+
 ### Logging (`test_audio/`)
 
 **`run_log.jsonl`** — appended on every run:
@@ -363,6 +398,7 @@ timestamp, audio_file, transcript_rating, audio_rating, notes
 - [x] Parallel TTS generation (asyncio)
 - [x] Episode rating UI (1–5 stars, notes)
 - [x] Run log (JSONL) + ratings log (CSV)
+- [x] Content safety guard (racism, hate speech, foul language blocked)
 - [ ] Background music mixer (intro/outro jingle)
 - [ ] RSS feed export for podcast platforms
 - [ ] Multi-language support
