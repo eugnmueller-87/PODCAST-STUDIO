@@ -19,32 +19,17 @@ from models import AudioOutput, DialogueLine, PodcastScript, PodcastSettings
 OUTPUTS_DIR = Path(__file__).parent.parent / "test_audio"
 OUTPUTS_DIR.mkdir(exist_ok=True)
 
-HOST_A_VOICE = "Social Media"        # Alex — ElevenLabs voice (falls back to SoniaNeural)
-HOST_B_VOICE = "en-US-GuyNeural"     # Sam — American male (edge-tts)
-HOST_A_FALLBACK = "en-GB-SoniaNeural"
+HOST_A_VOICE_ID = "NOpBlnGInO9m6vDvFkFC"  # Alex — ElevenLabs "Spuds Oxley" / Social Media
+HOST_A_FALLBACK = "en-GB-SoniaNeural"      # fallback if no ElevenLabs key
+HOST_B_VOICE = "en-US-GuyNeural"           # Sam — American male (edge-tts)
 
 ELEVENLABS_API_BASE = "https://api.elevenlabs.io/v1"
+ELEVENLABS_MODEL = "eleven_v3"
 
 
-# ── ElevenLabs helpers ────────────────────────────────────────────────────────
-
-def _get_elevenlabs_voice_id(name: str, api_key: str) -> str | None:
-    """Look up an ElevenLabs voice ID by display name."""
-    resp = requests.get(
-        f"{ELEVENLABS_API_BASE}/voices",
-        headers={"xi-api-key": api_key},
-        timeout=10,
-    )
-    if resp.status_code != 200:
-        return None
-    for voice in resp.json().get("voices", []):
-        if voice["name"].lower() == name.lower():
-            return voice["voice_id"]
-    return None
-
+# ── ElevenLabs helper ─────────────────────────────────────────────────────────
 
 def _elevenlabs_synthesise(text: str, voice_id: str, api_key: str) -> AudioSegment:
-    """Call ElevenLabs TTS and return an AudioSegment."""
     resp = requests.post(
         f"{ELEVENLABS_API_BASE}/text-to-speech/{voice_id}",
         headers={
@@ -54,25 +39,14 @@ def _elevenlabs_synthesise(text: str, voice_id: str, api_key: str) -> AudioSegme
         },
         json={
             "text": text,
-            "model_id": "eleven_multilingual_v2",
+            "model_id": ELEVENLABS_MODEL,
+            "language_code": "en",
             "voice_settings": {"stability": 0.4, "similarity_boost": 0.75, "style": 0.3},
         },
         timeout=30,
     )
     resp.raise_for_status()
     return AudioSegment.from_mp3(io.BytesIO(resp.content))
-
-
-# Cache the voice ID so we only look it up once per session
-_elevenlabs_voice_id_cache: dict[str, str] = {}
-
-
-def _get_cached_voice_id(name: str, api_key: str) -> str | None:
-    if name not in _elevenlabs_voice_id_cache:
-        vid = _get_elevenlabs_voice_id(name, api_key)
-        if vid:
-            _elevenlabs_voice_id_cache[name] = vid
-    return _elevenlabs_voice_id_cache.get(name)
 
 
 # ── Prosody & pause helpers (edge-tts only) ───────────────────────────────────
@@ -213,13 +187,11 @@ async def _synthesise_all(
 def synthesise_script(script: PodcastScript, settings: PodcastSettings) -> AudioOutput:
     host_a = settings.host_a_name.capitalize()
 
-    # Resolve ElevenLabs voice for Alex
+    # ElevenLabs for Alex — voice ID is hardcoded, no lookup needed
     api_key = os.environ.get("ELEVENLABS_API_KEY", "")
-    voice_id = None
-    if api_key:
-        voice_id = _get_cached_voice_id(HOST_A_VOICE, api_key)
-        if not voice_id:
-            print(f"[tts] ElevenLabs voice '{HOST_A_VOICE}' not found — falling back to {HOST_A_FALLBACK}")
+    voice_id = HOST_A_VOICE_ID if api_key else None
+    if not api_key:
+        print(f"[tts] No ELEVENLABS_API_KEY — Alex falling back to {HOST_A_FALLBACK}")
 
     loop = asyncio.new_event_loop()
     try:
