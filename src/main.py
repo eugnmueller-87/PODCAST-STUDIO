@@ -15,6 +15,7 @@ from data_processor import process
 from llm_processor import generate_script
 from tts_generator import synthesise_script
 from models import PodcastSettings, PodcastStyle, SourceType
+from content_guard import ContentViolationError
 
 RATINGS_LOG = Path(__file__).parent.parent / "test_audio" / "ratings.csv"
 RUN_LOG = Path(__file__).parent.parent / "test_audio" / "run_log.jsonl"
@@ -138,6 +139,20 @@ def run_pipeline(
 
         progress(1.0, desc="Done!")
         return audio_output.file_path, script_text, metadata_text, stats, audio_output.file_path
+
+    except ContentViolationError as e:
+        _log_run({
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": "blocked",
+            "elapsed_seconds": round(time.time() - run_start, 1),
+            "source_type": source_type_label,
+            "style": style_label,
+            "host_a": host_a_name or "Alex",
+            "host_b": host_b_name or "Sam",
+            "target_minutes": int(target_minutes),
+            "error": str(e),
+        })
+        return None, f"🚫 Content Blocked\n\n{e}", "", "", ""
 
     except Exception as e:
         _log_run({

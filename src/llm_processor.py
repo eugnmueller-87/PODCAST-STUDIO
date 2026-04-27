@@ -6,6 +6,7 @@ import anthropic
 
 from models import DialogueLine, EpisodeMetadata, PodcastInput, PodcastScript, PodcastSettings
 from humanizer import humanize_script
+from content_guard import check as safety_check
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 WORDS_PER_MINUTE = 150
@@ -72,6 +73,9 @@ def _parse_script(raw: str, settings: PodcastSettings) -> PodcastScript:
 
 
 def generate_script(podcast_input: PodcastInput, settings: PodcastSettings) -> PodcastScript:
+    # Guard — check source content before sending to Claude
+    safety_check(podcast_input.text, context="source input")
+
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     prompt = _build_prompt(podcast_input, settings)
 
@@ -84,4 +88,10 @@ def generate_script(podcast_input: PodcastInput, settings: PodcastSettings) -> P
 
     raw = message.content[0].text
     script = _parse_script(raw, settings)
-    return humanize_script(script)
+    humanized = humanize_script(script)
+
+    # Guard — verify the generated script is also clean
+    full_script_text = " ".join(line.text for line in humanized.lines)
+    safety_check(full_script_text, context="generated script")
+
+    return humanized
