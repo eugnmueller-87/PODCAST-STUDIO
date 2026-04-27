@@ -64,19 +64,25 @@ Text to evaluate:
 
 
 def _claude_check(text: str) -> str | None:
-    """Return a reason string if Claude flags the content, else None."""
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    # Cap at 3000 chars — enough for classification without burning tokens
-    sample = text[:3000]
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",   # cheapest model, fast for classification
-        max_tokens=60,
-        temperature=0,
-        messages=[{"role": "user", "content": _SAFETY_PROMPT.format(text=sample)}],
-    )
-    response = message.content[0].text.strip()
-    if response.startswith("BLOCKED:"):
-        return response[len("BLOCKED:"):].strip()
+    """Return a reason string if Claude flags the content, else None.
+    Skipped gracefully if ANTHROPIC_API_KEY is not set."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return None  # keyword layer still runs — Claude layer optional
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        sample = text[:3000]
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=60,
+            temperature=0,
+            messages=[{"role": "user", "content": _SAFETY_PROMPT.format(text=sample)}],
+        )
+        response = message.content[0].text.strip()
+        if response.startswith("BLOCKED:"):
+            return response[len("BLOCKED:"):].strip()
+    except Exception:
+        pass  # never let the guard itself crash the pipeline
     return None
 
 

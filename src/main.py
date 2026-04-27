@@ -162,7 +162,7 @@ def run_pipeline(
             "style": style_label,
             "error": str(e),
         })
-        return None, f"🚫 Content Blocked\n\n{e}", "", "", ""
+        return None, f"🚫 Blocked for Harmful Content\n\n{e}", "", "", ""
 
     except Exception as e:
         _log_run({
