@@ -95,7 +95,7 @@ def run_pipeline(
             source = pdf_input if isinstance(pdf_input, str) else (pdf_input.name if pdf_input else None)
 
         if not source:
-            return None, "⚠️ No input provided.", "", "", ""
+            return gr.update(value=None), "", "", "⚠️ No input provided.", ""
 
         podcast_input = process(source, source_type)
 
@@ -162,7 +162,8 @@ def run_pipeline(
             "style": style_label,
             "error": str(e),
         })
-        return None, f"🚫 Blocked for Harmful Content\n\n{e}", "", "", ""
+        msg = f"🚫 Content Blocked\n\n{e}"
+        return gr.update(value=None), "", "", msg, ""
 
     except Exception as e:
         _log_run({
@@ -174,7 +175,7 @@ def run_pipeline(
             "style": style_label,
             "error": str(e),
         })
-        return None, f"❌ Error: {str(e)}", "", "", ""
+        return gr.update(value=None), "", "", f"❌ {str(e)}", ""
 
 
 STUDIO_SVG = """
