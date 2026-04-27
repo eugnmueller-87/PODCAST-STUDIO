@@ -4,7 +4,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Gradio](https://img.shields.io/badge/UI-Gradio-orange.svg)](https://gradio.app/)
-[![OpenAI](https://img.shields.io/badge/LLM-OpenAI-412991.svg)](https://openai.com/)
+[![Claude](https://img.shields.io/badge/LLM-Claude-blueviolet.svg)](https://anthropic.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -32,15 +32,15 @@ The show format features two recurring hosts: **Alex** (the technical founder pe
 ### Core Pipeline
 - **Multi-source ingestion** — PDF upload, article URL scraping, YouTube transcript extraction, raw text paste
 - **Two-host dialogue** — LLM generates a scripted conversation between named hosts with distinct personalities and natural transitions
-- **Voice-per-host TTS** — Each host is rendered with a separate OpenAI TTS voice; segments are stitched into a single seamless MP3
+- **Voice-per-host TTS** — Each host is rendered with a distinct accent via gTTS; segments are stitched into a single seamless MP3
 - **Episode metadata** — Title, one-sentence summary, topical tags, and estimated listen time generated automatically
 
 ### Interface
 - **Gradio UI** with three tabs: Input, Settings, Output
 - Real-time progress bar through each pipeline stage
 - Full script preview alongside the audio player
-- One-click MP3 download with ID3 tags embedded
-- API cost estimate displayed after each run
+- One-click MP3 download
+- Script preview alongside the audio player
 
 ### Podcast Styles
 | Style | Format |
@@ -107,21 +107,16 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Open .env and fill in your keys
+# Open .env and add your Anthropic key
 ```
 
 Required keys:
 
 | Variable | Where to get it |
 |---|---|
-| `OPENAI_API_KEY` | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) |
 
-Optional keys (for enhanced features):
-
-| Variable | Purpose |
-|---|---|
-| `ANTHROPIC_API_KEY` | Use Claude instead of GPT-4o for scripting |
-| `ELEVENLABS_API_KEY` | Higher-quality voice synthesis |
+No other keys needed — audio is generated using gTTS (free, no account required).
 
 ### 5. Launch
 
@@ -155,11 +150,9 @@ Open the URL printed in the terminal (usually `http://localhost:7860`).
 
 | Component | Model / Service | Typical cost per episode |
 |---|---|---|
-| Script generation | GPT-4o (8k tokens) | ~$0.04 |
-| Text-to-speech | OpenAI TTS-1 (1,500 chars) | ~$0.02 |
-| **Total** | | **~$0.06 per episode** |
-
-Costs are displayed live in the UI after each generation.
+| Script generation | Claude Sonnet (8k tokens) | ~$0.03 |
+| Text-to-speech | gTTS (free) | $0.00 |
+| **Total** | | **~$0.03 per episode** |
 
 ---
 
@@ -194,8 +187,8 @@ Single-voice monologues are harder to follow aurally. A back-and-forth format:
 |---|---|
 | Backend | Python 3.10+ |
 | UI | Gradio 4.x |
-| LLM | OpenAI GPT-4o (default) / Claude 3.5 Sonnet |
-| TTS | OpenAI TTS-1 / ElevenLabs |
+| LLM | Claude Sonnet (Anthropic) |
+| TTS | gTTS (Google Text-to-Speech, free) |
 | Audio processing | pydub + ffmpeg |
 | PDF parsing | PyPDF2 |
 | Web scraping | requests + BeautifulSoup4 |
