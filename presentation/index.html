@@ -6,17 +6,18 @@
 <title>PodcastIQ — Project Presentation</title>
 <style>
   :root {
-    --bg:        #0d0d12;
-    --surface:   #15151f;
-    --card:      #1c1c2a;
-    --border:    #2a2a3d;
-    --accent:    #7c5cfc;
-    --accent2:   #fc5c7d;
-    --accent3:   #5cf8d4;
-    --gold:      #f5c842;
-    --text:      #e8e8f0;
-    --muted:     #8888aa;
-    --r:         16px;
+    --bg:      #f5f6fa;
+    --surface: #ffffff;
+    --card:    #ffffff;
+    --border:  #e2e4ed;
+    --accent:  #5b4fcf;
+    --accent2: #e8436a;
+    --accent3: #0ea87a;
+    --gold:    #d4960a;
+    --text:    #1a1a2e;
+    --muted:   #6b7280;
+    --shadow:  0 2px 16px rgba(0,0,0,.08);
+    --r:       14px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,10 +41,10 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 60px 80px;
+    padding: 56px 80px;
     opacity: 0;
     transform: translateX(80px);
-    transition: opacity .45s ease, transform .45s ease;
+    transition: opacity .4s ease, transform .4s ease;
     pointer-events: none;
     text-align: center;
   }
@@ -60,7 +61,7 @@
   /* ── NAV ─────────────────────────────────────── */
   nav {
     position: fixed;
-    bottom: 32px;
+    bottom: 28px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -72,35 +73,35 @@
   .dot {
     width: 8px; height: 8px;
     border-radius: 50%;
-    background: var(--border);
+    background: #d1d5db;
     cursor: pointer;
     transition: background .3s, transform .3s;
   }
   .dot.active { background: var(--accent); transform: scale(1.5); }
 
   .arrow {
-    background: var(--card);
+    background: #ffffff;
     border: 1px solid var(--border);
     color: var(--text);
     padding: 8px 20px;
     border-radius: 40px;
     cursor: pointer;
     font-size: 14px;
-    transition: background .2s;
+    box-shadow: var(--shadow);
+    transition: background .2s, color .2s;
     user-select: none;
   }
-  .arrow:hover { background: var(--accent); border-color: var(--accent); }
+  .arrow:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
   .slide-counter {
     position: fixed;
-    top: 24px;
+    top: 22px;
     right: 32px;
     font-size: 13px;
     color: var(--muted);
     letter-spacing: .05em;
   }
 
-  /* ── PROGRESS BAR ────────────────────────────── */
   #progress-bar {
     position: fixed;
     top: 0; left: 0;
@@ -111,21 +112,22 @@
   }
 
   /* ── TYPOGRAPHY ──────────────────────────────── */
-  h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.1; }
-  h2 { font-size: clamp(1.6rem, 3vw, 2.6rem); font-weight: 700; margin-bottom: 28px; }
-  h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; }
-  p  { font-size: 1.05rem; line-height: 1.7; color: var(--muted); }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 800; line-height: 1.1; color: var(--text); }
+  h2 { font-size: clamp(1.5rem, 3vw, 2.4rem); font-weight: 700; margin-bottom: 26px; color: var(--text); }
+  h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  p  { font-size: 1rem; line-height: 1.7; color: var(--muted); }
 
   .tag {
     display: inline-block;
-    background: var(--card);
-    border: 1px solid var(--border);
+    background: #ede9fc;
+    border: 1px solid #c4b8f8;
     border-radius: 40px;
-    padding: 4px 14px;
-    font-size: .8rem;
-    color: var(--muted);
-    letter-spacing: .06em;
+    padding: 4px 16px;
+    font-size: .78rem;
+    color: var(--accent);
+    letter-spacing: .07em;
     text-transform: uppercase;
+    font-weight: 600;
     margin-bottom: 16px;
   }
 
@@ -135,7 +137,6 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-
   .grad-text2 {
     background: linear-gradient(135deg, var(--accent3), var(--accent));
     -webkit-background-clip: text;
@@ -144,12 +145,7 @@
   }
 
   /* ── CARDS ───────────────────────────────────── */
-  .grid {
-    display: grid;
-    gap: 20px;
-    width: 100%;
-    max-width: 1100px;
-  }
+  .grid { display: grid; gap: 18px; width: 100%; max-width: 1100px; }
   .grid-3 { grid-template-columns: repeat(3, 1fr); }
   .grid-2 { grid-template-columns: repeat(2, 1fr); }
   .grid-4 { grid-template-columns: repeat(4, 1fr); }
@@ -158,36 +154,33 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--r);
-    padding: 28px 24px;
+    padding: 26px 22px;
     text-align: left;
-    transition: border-color .3s, transform .3s;
+    box-shadow: var(--shadow);
+    transition: box-shadow .3s, transform .3s;
   }
-  .card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.12); transform: translateY(-2px); }
 
-  .card .icon {
-    font-size: 2rem;
-    margin-bottom: 12px;
-    display: block;
-  }
+  .card .icon { font-size: 2rem; margin-bottom: 12px; display: block; }
 
-  .card.accent-border { border-top: 3px solid var(--accent); }
+  .card.accent-border  { border-top: 3px solid var(--accent); }
   .card.accent2-border { border-top: 3px solid var(--accent2); }
   .card.accent3-border { border-top: 3px solid var(--accent3); }
-  .card.gold-border { border-top: 3px solid var(--gold); }
+  .card.gold-border    { border-top: 3px solid var(--gold); }
 
-  /* ── BADGE ───────────────────────────────────── */
+  /* ── BADGES ──────────────────────────────────── */
   .badge {
     display: inline-block;
     padding: 3px 10px;
     border-radius: 20px;
     font-size: .75rem;
     font-weight: 600;
-    letter-spacing: .04em;
+    letter-spacing: .03em;
   }
-  .badge-purple { background: rgba(124,92,252,.18); color: var(--accent); }
-  .badge-pink   { background: rgba(252,92,125,.18); color: var(--accent2); }
-  .badge-teal   { background: rgba(92,248,212,.18); color: var(--accent3); }
-  .badge-gold   { background: rgba(245,200,66,.18); color: var(--gold); }
+  .badge-purple { background: #ede9fc; color: var(--accent); }
+  .badge-pink   { background: #fde8ed; color: var(--accent2); }
+  .badge-teal   { background: #d8f5ec; color: var(--accent3); }
+  .badge-gold   { background: #fef3cd; color: var(--gold); }
 
   /* ── PIPELINE STEPS ──────────────────────────── */
   .pipeline {
@@ -202,33 +195,29 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--r);
-    padding: 22px 16px;
+    padding: 22px 14px;
     text-align: center;
-    font-size: .88rem;
-    position: relative;
+    font-size: .87rem;
+    box-shadow: var(--shadow);
   }
   .step .num {
     width: 28px; height: 28px;
     background: var(--accent);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: .75rem; font-weight: 700;
+    font-size: .75rem; font-weight: 700; color: #fff;
     margin: 0 auto 10px;
   }
-  .step-arrow {
-    font-size: 1.4rem;
-    color: var(--accent);
-    padding: 0 6px;
-    flex-shrink: 0;
-  }
+  .step-arrow { font-size: 1.3rem; color: var(--accent); padding: 0 5px; flex-shrink: 0; }
 
   /* ── TEAM CARDS ──────────────────────────────── */
   .team-card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--r);
-    padding: 40px 30px;
+    padding: 38px 28px;
     text-align: center;
+    box-shadow: var(--shadow);
     position: relative;
     overflow: hidden;
   }
@@ -243,52 +232,51 @@
   .team-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent3), var(--accent)); }
 
   .avatar {
-    width: 80px; height: 80px;
+    width: 76px; height: 76px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 2rem;
-    margin: 0 auto 20px;
+    margin: 0 auto 18px;
     border: 2px solid var(--border);
   }
-
-  .team-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
-  .team-role { font-size: .85rem; color: var(--muted); }
+  .team-name { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .team-role { font-size: .84rem; color: var(--muted); }
 
   /* ── STAT NUMBERS ────────────────────────────── */
   .stat-num {
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(2.4rem, 4.5vw, 3.8rem);
     font-weight: 800;
     line-height: 1;
     margin-bottom: 6px;
   }
-  .stat-label { font-size: .9rem; color: var(--muted); }
+  .stat-label { font-size: .88rem; color: var(--muted); }
 
   /* ── CODE BLOCK ──────────────────────────────── */
   .code-block {
-    background: #0a0a10;
+    background: #f0f1f7;
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 20px 24px;
+    padding: 18px 22px;
     font-family: 'Cascadia Code', 'Fira Code', monospace;
-    font-size: .85rem;
+    font-size: .84rem;
     text-align: left;
     line-height: 1.8;
-    color: var(--accent3);
+    color: #2d3a6e;
     width: 100%;
     max-width: 700px;
   }
-  .code-block .c { color: var(--muted); }
-  .code-block .k { color: var(--accent); }
+  .code-block .c { color: #9ca3af; }
+  .code-block .k { color: var(--accent); font-weight: 600; }
   .code-block .s { color: var(--gold); }
   .code-block .n { color: var(--accent2); }
 
   /* ── QUOTE ───────────────────────────────────── */
   .quote {
     border-left: 4px solid var(--accent);
-    padding: 16px 24px;
-    background: var(--card);
+    padding: 16px 22px;
+    background: #f0edfb;
     border-radius: 0 var(--r) var(--r) 0;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-style: italic;
     color: var(--text);
     text-align: left;
@@ -296,116 +284,6 @@
   }
 
   /* ── TABLE ───────────────────────────────────── */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: .9rem;
-  }
-  th {
-    background: var(--card);
-    color: var(--muted);
-    font-weight: 600;
-    padding: 12px 18px;
-    text-align: left;
-    border-bottom: 2px solid var(--border);
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    font-size: .8rem;
-  }
-  td {
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-  }
-  tr:hover td { background: rgba(124,92,252,.06); }
-
-  /* ── LOGO / TITLE SLIDE ──────────────────────── */
-  .logo-ring {
-    width: 120px; height: 120px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 3rem;
-    margin: 0 auto 32px;
-    box-shadow: 0 0 60px rgba(124,92,252,.4);
-    animation: pulse 3s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%,100% { box-shadow: 0 0 40px rgba(124,92,252,.3); }
-    50%      { box-shadow: 0 0 80px rgba(124,92,252,.6); }
-  }
-
-  .subtitle {
-    font-size: 1.2rem;
-    color: var(--muted);
-    margin: 16px 0 40px;
-    line-height: 1.6;
-  }
-
-  .pill-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 8px;
-  }
-  .pill {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 40px;
-    padding: 6px 18px;
-    font-size: .82rem;
-    color: var(--muted);
-  }
-
-  /* ── VERTICAL LIST ───────────────────────────── */
-  .check-list {
-    list-style: none;
-    text-align: left;
-    max-width: 700px;
-    width: 100%;
-  }
-  .check-list li {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-size: .98rem;
-    color: var(--text);
-  }
-  .check-list li:last-child { border-bottom: none; }
-  .check-list .ck { color: var(--accent3); font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
-
-  /* ── SLIDE-SPECIFIC BACKGROUNDS ─────────────── */
-  #s1 {
-    background:
-      radial-gradient(ellipse at 20% 50%, rgba(124,92,252,.08) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 20%, rgba(252,92,125,.06) 0%, transparent 50%),
-      var(--bg);
-  }
-  #s2  { background: var(--bg); }
-  #s10 {
-    background:
-      radial-gradient(ellipse at 70% 80%, rgba(92,248,212,.06) 0%, transparent 55%),
-      var(--bg);
-  }
-
-  /* ── GLOW CHIP ───────────────────────────────── */
-  .glow-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(124,92,252,.12);
-    border: 1px solid rgba(124,92,252,.3);
-    border-radius: 40px;
-    padding: 6px 20px;
-    font-size: .85rem;
-    color: var(--accent);
-    margin-bottom: 24px;
-  }
-
-  /* ── SCROLLABLE TABLE WRAPPER ────────────────── */
   .tbl-wrap {
     width: 100%;
     max-width: 1100px;
@@ -413,6 +291,93 @@
     border: 1px solid var(--border);
     border-radius: var(--r);
     background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th {
+    background: #f8f9fc;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 12px 18px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: .78rem;
+  }
+  td { padding: 12px 18px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f5f3ff; }
+
+  /* ── LOGO RING ───────────────────────────────── */
+  .logo-ring {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.8rem;
+    margin: 0 auto 28px;
+    box-shadow: 0 8px 40px rgba(91,79,207,.25);
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 8px 32px rgba(91,79,207,.2); }
+    50%      { box-shadow: 0 8px 56px rgba(91,79,207,.4); }
+  }
+
+  .subtitle { font-size: 1.15rem; color: var(--muted); margin: 14px 0 36px; line-height: 1.6; }
+
+  .pill-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+  .pill {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 40px;
+    padding: 5px 16px;
+    font-size: .8rem;
+    color: var(--muted);
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+
+  /* ── CHECKLIST ───────────────────────────────── */
+  .check-list { list-style: none; text-align: left; max-width: 700px; width: 100%; }
+  .check-list li {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: .96rem;
+    color: var(--text);
+  }
+  .check-list li:last-child { border-bottom: none; }
+  .check-list .ck { color: var(--accent3); font-size: .95rem; flex-shrink: 0; margin-top: 2px; }
+
+  /* ── GLOW CHIP ───────────────────────────────── */
+  .glow-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ede9fc;
+    border: 1px solid #c4b8f8;
+    border-radius: 40px;
+    padding: 6px 20px;
+    font-size: .83rem;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  /* ── SLIDE BACKGROUNDS ───────────────────────── */
+  #s1 {
+    background:
+      radial-gradient(ellipse at 15% 50%, rgba(91,79,207,.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 85% 20%, rgba(232,67,106,.05) 0%, transparent 55%),
+      var(--bg);
+  }
+  #s10 {
+    background:
+      radial-gradient(ellipse at 75% 80%, rgba(14,168,122,.05) 0%, transparent 55%),
+      var(--bg);
   }
 </style>
 </head>
@@ -440,8 +405,8 @@
       <span class="pill">Gradio 6</span>
       <span class="pill">Python 3.10+</span>
     </div>
-    <div class="pill-row" style="margin-top:24px;">
-      <span style="font-size:.9rem;color:var(--muted);">
+    <div class="pill-row" style="margin-top:22px;">
+      <span style="font-size:.9rem;color:var(--muted);font-weight:500;">
         Eugen Müller &nbsp;·&nbsp; Markus von Aschoff &nbsp;·&nbsp; Gunter Maximilian Kleber
       </span>
     </div>
@@ -451,7 +416,7 @@
   <section class="slide" id="s2">
     <div class="tag">The Challenge</div>
     <h2>Turning any content into a podcast<br>is <span class="grad-text">painful and slow.</span></h2>
-    <div class="grid grid-3" style="max-width:1000px;margin-top:20px;">
+    <div class="grid grid-3" style="max-width:1000px;margin-top:18px;">
       <div class="card accent2-border">
         <span class="icon">⏱</span>
         <h3>Hours of editing</h3>
@@ -468,7 +433,7 @@
         <p>Articles, PDFs and talks need full rewriting before they can be spoken.</p>
       </div>
     </div>
-    <div class="quote" style="margin-top:32px;">
+    <div class="quote" style="margin-top:28px;">
       "What if you could drop a link and receive a fully produced, two-host podcast episode — automatically?"
     </div>
   </section>
@@ -477,7 +442,7 @@
   <section class="slide" id="s3">
     <div class="tag">Our Solution</div>
     <h2>One click. Four sources. <span class="grad-text2">Full audio.</span></h2>
-    <div class="grid grid-2" style="max-width:900px;margin-top:16px;gap:18px;">
+    <div class="grid grid-2" style="max-width:900px;margin-top:14px;gap:16px;">
       <div class="card">
         <span class="icon">🌐</span>
         <h3>Any content in</h3>
@@ -491,7 +456,7 @@
       <div class="card">
         <span class="icon">🔊</span>
         <h3>Premium voices</h3>
-        <p><strong>Alex</strong> — ElevenLabs eleven_v3 (premium, falls back to edge-tts). <strong>Sam</strong> — Microsoft en-US-GuyNeural, free, always available.</p>
+        <p><strong>Alex</strong> — ElevenLabs eleven_v3 (premium, falls back to edge-tts). <strong>Sam</strong> — Microsoft en-US-GuyNeural, always available.</p>
       </div>
       <div class="card">
         <span class="icon">📦</span>
@@ -505,7 +470,7 @@
   <section class="slide" id="s4">
     <div class="tag">Architecture</div>
     <h2>A <span class="grad-text">5-step pipeline</span> from raw content to audio</h2>
-    <div class="pipeline" style="margin-top:28px;">
+    <div class="pipeline" style="margin-top:26px;">
       <div class="step">
         <div class="num">1</div>
         <div style="font-size:1.3rem;margin-bottom:8px;">📥</div>
@@ -541,7 +506,7 @@
         <p style="font-size:.8rem;margin-top:6px;">pydub stitch<br>Logged + rated</p>
       </div>
     </div>
-    <div class="code-block" style="margin-top:28px;max-width:100%;">
+    <div class="code-block" style="margin-top:26px;max-width:100%;">
       <span class="c"># Full pipeline in one call</span><br>
       script = <span class="k">generate_script</span>(podcast_input, settings) &nbsp;<span class="c"># LLM → Humanizer</span><br>
       audio  = <span class="k">synthesise_script</span>(script, settings)  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c"># TTS → pydub → MP3</span>
@@ -552,7 +517,7 @@
   <section class="slide" id="s5">
     <div class="tag">Content Formats</div>
     <h2>Four podcast styles — <span class="grad-text">one prompt each</span></h2>
-    <div class="tbl-wrap" style="margin-top:24px;">
+    <div class="tbl-wrap" style="margin-top:22px;">
       <table>
         <thead>
           <tr>
@@ -590,9 +555,9 @@
         </tbody>
       </table>
     </div>
-    <p style="margin-top:22px;font-size:.9rem;">
-      Each style has its own prompt file in <code style="color:var(--accent3);">prompts/</code>.
-      Template variables: <code style="color:var(--accent3);">source_text · target_minutes · word_count_target · host_a_name · host_b_name</code>
+    <p style="margin-top:20px;font-size:.88rem;">
+      Each style has its own prompt file in <code style="color:var(--accent);background:#ede9fc;padding:2px 8px;border-radius:6px;">prompts/</code>.
+      Variables: <code style="color:var(--muted);">source_text · target_minutes · word_count_target · host_a_name · host_b_name</code>
     </p>
   </section>
 
@@ -600,7 +565,7 @@
   <section class="slide" id="s6">
     <div class="tag">Humanizer Layer</div>
     <h2>Making the dialogue feel <span class="grad-text2">genuinely human</span></h2>
-    <div class="grid grid-2" style="max-width:1000px;margin-top:18px;gap:18px;">
+    <div class="grid grid-2" style="max-width:1000px;margin-top:16px;gap:16px;">
       <div class="card accent-border">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
           <h3>Reactions</h3><span class="badge badge-purple">45%</span>
@@ -626,7 +591,7 @@
         <p>"Classic Silicon Valley — disrupt first, apologise later." Appended to Sam's lines only.</p>
       </div>
     </div>
-    <p style="margin-top:20px;font-size:.88rem;">
+    <p style="margin-top:18px;font-size:.87rem;">
       Sam also gets <strong>self-deprecation (15%)</strong>: "— don't fact-check me on that, I'm going from memory."
     </p>
   </section>
@@ -635,12 +600,11 @@
   <section class="slide" id="s7">
     <div class="tag">Voice &amp; Audio</div>
     <h2>Neural voices with <span class="grad-text">emotional prosody</span></h2>
-    <div class="grid grid-2" style="max-width:1000px;margin-top:18px;gap:18px;">
+    <div class="grid grid-2" style="max-width:1000px;margin-top:16px;gap:16px;">
       <div class="card">
         <span class="icon">👩‍💼</span>
         <h3>Alex — ElevenLabs</h3>
-        <p>Model: <code style="color:var(--accent3);">eleven_v3</code><br>
-        Voice ID: <code style="color:var(--accent3);">DEZHhPbmb8LVZmWufkCh</code><br>
+        <p>Model: <code style="color:var(--accent);">eleven_v3</code><br>
         Stability 0.75 · Similarity 0.90 · Style 0.20<br>
         Falls back to <code style="color:var(--muted);">en-GB-SoniaNeural</code> if no API key.</p>
       </div>
@@ -649,12 +613,12 @@
         <h3>Sam — Microsoft edge-tts</h3>
         <p>Voice: <code style="color:var(--accent3);">en-US-GuyNeural</code><br>
         Free, always available — no API key required.<br>
-        Dry, slightly slower delivery to match his wit.</p>
+        Dry, measured delivery to match his wit.</p>
       </div>
     </div>
-    <div class="tbl-wrap" style="margin-top:20px;">
+    <div class="tbl-wrap" style="margin-top:18px;">
       <table>
-        <thead><tr><th>Trigger</th><th>Rate</th><th>Pitch</th><th>Silence inserted</th></tr></thead>
+        <thead><tr><th>Trigger</th><th>Rate</th><th>Pitch</th><th>Silence</th></tr></thead>
         <tbody>
           <tr><td>Line ends with <code>?</code></td><td>−8%</td><td>+10 Hz</td><td>300–500 ms after</td></tr>
           <tr><td>Excited words (wow, incredible…)</td><td>+10%</td><td>+8 Hz</td><td>—</td></tr>
@@ -671,15 +635,15 @@
   <section class="slide" id="s8">
     <div class="tag">Safety &amp; Logging</div>
     <h2>Content guard + full <span class="grad-text">run transparency</span></h2>
-    <div class="grid grid-2" style="max-width:1000px;margin-top:16px;gap:18px;">
+    <div class="grid grid-2" style="max-width:1000px;margin-top:14px;gap:16px;">
       <div class="card" style="text-align:left;">
         <span class="icon">🛡</span>
         <h3>2-Layer Content Guard</h3>
-        <p style="margin-bottom:14px;">Applied <strong>before</strong> the LLM and <strong>after</strong> humanization.</p>
+        <p style="margin-bottom:12px;">Applied <strong>before</strong> the LLM and <strong>after</strong> humanization.</p>
         <ul class="check-list">
           <li><span class="ck">✔</span><div><strong>Layer 1 — Regex blocklist</strong> (instant, no API call): slurs, hate phrases, calls for violence.</div></li>
           <li><span class="ck">✔</span><div><strong>Layer 2 — Claude Haiku classifier</strong> (temp 0, ~60 tokens): coded language, implied discrimination, subtle abuse.</div></li>
-          <li><span class="ck">✔</span><div>Violations show <code style="color:var(--accent2);">🚫 Blocked for Harmful Content</code> in the UI and are logged as <code>"status": "blocked"</code>.</div></li>
+          <li><span class="ck">✔</span><div>Violations show <strong>🚫 Blocked for Harmful Content</strong> in the UI and logged as <code>"status": "blocked"</code>.</div></li>
         </ul>
       </div>
       <div class="card" style="text-align:left;">
@@ -696,8 +660,8 @@
           &nbsp;&nbsp;<span class="s">"audio_duration_min"</span>: <span class="n">4.7</span><br>
           }
         </div>
-        <p style="margin-top:12px;font-size:.85rem;">
-          Plus <code style="color:var(--accent3);">ratings.csv</code> — 1–5 stars for transcript &amp; audio quality with free-text notes.
+        <p style="margin-top:12px;font-size:.84rem;">
+          Plus <code style="color:var(--accent3);background:#d8f5ec;padding:2px 6px;border-radius:4px;">ratings.csv</code> — 1–5 stars for transcript &amp; audio quality with free-text notes.
         </p>
       </div>
     </div>
@@ -707,46 +671,46 @@
   <section class="slide" id="s9">
     <div class="tag">Tech Stack</div>
     <h2>Every layer <span class="grad-text2">intentionally chosen</span></h2>
-    <div class="grid grid-4" style="max-width:1100px;margin-top:20px;gap:14px;">
-      <div class="card" style="padding:20px 16px;">
-        <span class="icon" style="font-size:1.5rem;">🤖</span>
-        <h3 style="font-size:.95rem;">LLM</h3>
-        <p style="font-size:.8rem;">Claude Sonnet 4.6<br>GPT-4o<br>Claude Haiku (guard)</p>
+    <div class="grid grid-4" style="max-width:1100px;margin-top:18px;gap:12px;">
+      <div class="card" style="padding:18px 14px;">
+        <span class="icon" style="font-size:1.4rem;">🤖</span>
+        <h3 style="font-size:.92rem;">LLM</h3>
+        <p style="font-size:.78rem;">Claude Sonnet 4.6<br>GPT-4o<br>Claude Haiku (guard)</p>
       </div>
-      <div class="card" style="padding:20px 16px;">
-        <span class="icon" style="font-size:1.5rem;">🔊</span>
-        <h3 style="font-size:.95rem;">TTS</h3>
-        <p style="font-size:.8rem;">ElevenLabs eleven_v3<br>Microsoft edge-tts<br>Parallel asyncio</p>
+      <div class="card" style="padding:18px 14px;">
+        <span class="icon" style="font-size:1.4rem;">🔊</span>
+        <h3 style="font-size:.92rem;">TTS</h3>
+        <p style="font-size:.78rem;">ElevenLabs eleven_v3<br>Microsoft edge-tts<br>Parallel asyncio</p>
       </div>
-      <div class="card" style="padding:20px 16px;">
-        <span class="icon" style="font-size:1.5rem;">🎵</span>
-        <h3 style="font-size:.95rem;">Audio</h3>
-        <p style="font-size:.8rem;">pydub AudioSegment<br>static-ffmpeg (bundled)<br>MP3 export</p>
+      <div class="card" style="padding:18px 14px;">
+        <span class="icon" style="font-size:1.4rem;">🎵</span>
+        <h3 style="font-size:.92rem;">Audio</h3>
+        <p style="font-size:.78rem;">pydub AudioSegment<br>static-ffmpeg (bundled)<br>MP3 export</p>
       </div>
-      <div class="card" style="padding:20px 16px;">
-        <span class="icon" style="font-size:1.5rem;">🖥</span>
-        <h3 style="font-size:.95rem;">UI</h3>
-        <p style="font-size:.8rem;">Gradio 6.x<br>gr.Blocks dark theme<br>share=True live URL</p>
+      <div class="card" style="padding:18px 14px;">
+        <span class="icon" style="font-size:1.4rem;">🖥</span>
+        <h3 style="font-size:.92rem;">UI</h3>
+        <p style="font-size:.78rem;">Gradio 6.x<br>gr.Blocks light theme<br>share=True live URL</p>
       </div>
-      <div class="card" style="padding:20px 16px;">
-        <span class="icon" style="font-size:1.5rem;">📥</span>
-        <h3 style="font-size:.95rem;">Ingestion</h3>
-        <p style="font-size:.8rem;">requests + BS4 (URL)<br>PyPDF2 (PDF)<br>youtube-transcript-api</p>
+      <div class="card" style="padding:18px 14px;">
+        <span class="icon" style="font-size:1.4rem;">📥</span>
+        <h3 style="font-size:.92rem;">Ingestion</h3>
+        <p style="font-size:.78rem;">requests + BS4 (URL)<br>PyPDF2 (PDF)<br>youtube-transcript-api</p>
       </div>
-      <div class="card" style="padding:20px 16px;">
-        <span class="icon" style="font-size:1.5rem;">🔒</span>
-        <h3 style="font-size:.95rem;">Safety</h3>
-        <p style="font-size:.8rem;">Regex blocklist<br>Haiku classifier<br>2-checkpoint guard</p>
+      <div class="card" style="padding:18px 14px;">
+        <span class="icon" style="font-size:1.4rem;">🔒</span>
+        <h3 style="font-size:.92rem;">Safety</h3>
+        <p style="font-size:.78rem;">Regex blocklist<br>Haiku classifier<br>2-checkpoint guard</p>
       </div>
-      <div class="card" style="padding:20px 16px;">
-        <span class="icon" style="font-size:1.5rem;">📋</span>
-        <h3 style="font-size:.95rem;">Logging</h3>
-        <p style="font-size:.8rem;">JSONL run log<br>CSV ratings<br>GitHub-visible</p>
+      <div class="card" style="padding:18px 14px;">
+        <span class="icon" style="font-size:1.4rem;">📋</span>
+        <h3 style="font-size:.92rem;">Logging</h3>
+        <p style="font-size:.78rem;">JSONL run log<br>CSV ratings<br>GitHub-visible</p>
       </div>
-      <div class="card" style="padding:20px 16px;">
-        <span class="icon" style="font-size:1.5rem;">🔧</span>
-        <h3 style="font-size:.95rem;">Config</h3>
-        <p style="font-size:.8rem;">python-dotenv<br>Git main + develop<br>Python 3.10+</p>
+      <div class="card" style="padding:18px 14px;">
+        <span class="icon" style="font-size:1.4rem;">🔧</span>
+        <h3 style="font-size:.92rem;">Config</h3>
+        <p style="font-size:.78rem;">python-dotenv<br>Git main + develop<br>Python 3.10+</p>
       </div>
     </div>
   </section>
@@ -755,28 +719,28 @@
   <section class="slide" id="s10">
     <div class="tag">By the Numbers</div>
     <h2>What we built <span class="grad-text">in one week</span></h2>
-    <div class="grid grid-3" style="max-width:1000px;margin-top:24px;gap:20px;">
-      <div class="card" style="text-align:center;padding:36px 20px;">
+    <div class="grid grid-3" style="max-width:1000px;margin-top:22px;gap:18px;">
+      <div class="card" style="text-align:center;padding:34px 20px;">
         <div class="stat-num grad-text">&lt;60s</div>
         <div class="stat-label">Full episode, URL to MP3</div>
       </div>
-      <div class="card" style="text-align:center;padding:36px 20px;">
+      <div class="card" style="text-align:center;padding:34px 20px;">
         <div class="stat-num grad-text">4</div>
         <div class="stat-label">Podcast styles with unique prompts</div>
       </div>
-      <div class="card" style="text-align:center;padding:36px 20px;">
+      <div class="card" style="text-align:center;padding:34px 20px;">
         <div class="stat-num grad-text2">2</div>
         <div class="stat-label">LLM providers — Claude &amp; GPT-4o</div>
       </div>
-      <div class="card" style="text-align:center;padding:36px 20px;">
+      <div class="card" style="text-align:center;padding:34px 20px;">
         <div class="stat-num" style="color:var(--accent3);">~$0.05</div>
         <div class="stat-label">Cost per episode (Claude + ElevenLabs)</div>
       </div>
-      <div class="card" style="text-align:center;padding:36px 20px;">
+      <div class="card" style="text-align:center;padding:34px 20px;">
         <div class="stat-num" style="color:var(--gold);">2-layer</div>
         <div class="stat-label">Content safety guard (regex + Haiku)</div>
       </div>
-      <div class="card" style="text-align:center;padding:36px 20px;">
+      <div class="card" style="text-align:center;padding:34px 20px;">
         <div class="stat-num grad-text">3-layer</div>
         <div class="stat-label">Humanizer — reactions, openers, humour</div>
       </div>
@@ -787,7 +751,7 @@
   <section class="slide" id="s11">
     <div class="tag">What's Done &amp; What's Next</div>
     <h2>Done in <span class="grad-text">Week 2</span> — up next for the world</h2>
-    <div class="grid grid-2" style="max-width:900px;margin-top:20px;gap:20px;text-align:left;">
+    <div class="grid grid-2" style="max-width:900px;margin-top:18px;gap:20px;text-align:left;">
       <div>
         <h3 style="color:var(--accent3);margin-bottom:14px;">✅ Completed</h3>
         <ul class="check-list">
@@ -806,11 +770,11 @@
       <div>
         <h3 style="color:var(--muted);margin-bottom:14px;">⬜ Stretch Goals</h3>
         <ul class="check-list">
-          <li><span style="color:var(--border);">○</span>Background music mixer (intro/outro jingle)</li>
-          <li><span style="color:var(--border);">○</span>RSS feed export for podcast platforms</li>
-          <li><span style="color:var(--border);">○</span>Multi-language support</li>
-          <li><span style="color:var(--border);">○</span>Batch generation mode</li>
-          <li><span style="color:var(--border);">○</span>API endpoint for external integrations</li>
+          <li><span style="color:#d1d5db;">○</span>Background music mixer (intro/outro jingle)</li>
+          <li><span style="color:#d1d5db;">○</span>RSS feed export for podcast platforms</li>
+          <li><span style="color:#d1d5db;">○</span>Multi-language support</li>
+          <li><span style="color:#d1d5db;">○</span>Batch generation mode</li>
+          <li><span style="color:#d1d5db;">○</span>API endpoint for external integrations</li>
         </ul>
       </div>
     </div>
@@ -820,12 +784,10 @@
   <section class="slide" id="s12">
     <div class="tag">The Team</div>
     <h2>Built by <span class="grad-text">three humans,</span><br>powered by machines</h2>
-    <div class="grid grid-3" style="max-width:1000px;margin-top:28px;gap:22px;">
+    <div class="grid grid-3" style="max-width:1000px;margin-top:26px;gap:20px;">
 
       <div class="team-card">
-        <div class="avatar" style="background: linear-gradient(135deg,rgba(124,92,252,.2),rgba(252,92,125,.2));">
-          🧑‍💻
-        </div>
+        <div class="avatar" style="background:linear-gradient(135deg,#ede9fc,#fde8ed);">🧑‍💻</div>
         <div class="team-name">Eugen Müller</div>
         <div class="team-role" style="margin-bottom:14px;">Core Pipeline &amp; LLM Integration</div>
         <div class="pill-row" style="justify-content:center;">
@@ -836,9 +798,7 @@
       </div>
 
       <div class="team-card">
-        <div class="avatar" style="background: linear-gradient(135deg,rgba(252,92,125,.2),rgba(245,200,66,.2));">
-          🎙
-        </div>
+        <div class="avatar" style="background:linear-gradient(135deg,#fde8ed,#fef3cd);">🎙</div>
         <div class="team-name">Markus von Aschoff</div>
         <div class="team-role" style="margin-bottom:14px;">Audio &amp; Voice Engineering</div>
         <div class="pill-row" style="justify-content:center;">
@@ -849,9 +809,7 @@
       </div>
 
       <div class="team-card">
-        <div class="avatar" style="background: linear-gradient(135deg,rgba(92,248,212,.2),rgba(124,92,252,.2));">
-          🖥
-        </div>
+        <div class="avatar" style="background:linear-gradient(135deg,#d8f5ec,#ede9fc);">🖥</div>
         <div class="team-name">Gunter Maximilian Kleber</div>
         <div class="team-role" style="margin-bottom:14px;">UI, Logging &amp; QA</div>
         <div class="pill-row" style="justify-content:center;">
@@ -862,8 +820,8 @@
       </div>
 
     </div>
-    <div style="margin-top:40px;padding:20px 40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:inline-block;">
-      <p style="font-size:.9rem;color:var(--muted);">
+    <div style="margin-top:36px;padding:18px 36px;background:#fff;border:1px solid var(--border);border-radius:var(--r);display:inline-block;box-shadow:var(--shadow);">
+      <p style="font-size:.88rem;color:var(--muted);">
         🎓 &nbsp;<strong style="color:var(--text);">Ironhack</strong> &nbsp;·&nbsp; Week 2 Group Project &nbsp;·&nbsp; April 2026<br>
         <span style="font-size:.8rem;">github.com/eugnmueller-87/PODCAST-STUDIO</span>
       </p>
@@ -886,7 +844,6 @@
   const bar     = document.getElementById('progress-bar');
   let   current = 0;
 
-  // Build dots
   slides.forEach((_, i) => {
     const d = document.createElement('div');
     d.className = 'dot' + (i === 0 ? ' active' : '');
@@ -896,10 +853,7 @@
 
   function update() {
     const dots = dotsEl.querySelectorAll('.dot');
-    slides.forEach((s, i) => {
-      s.classList.remove('active', 'exit');
-      dots[i].classList.remove('active');
-    });
+    slides.forEach((s, i) => { s.classList.remove('active','exit'); dots[i].classList.remove('active'); });
     slides[current].classList.add('active');
     dots[current].classList.add('active');
     counter.textContent = `${current + 1} / ${slides.length}`;
@@ -909,7 +863,7 @@
   function go(idx) {
     if (idx === current) return;
     slides[current].classList.add('exit');
-    setTimeout(() => slides[current === idx ? current : current].classList.remove('exit'), 450);
+    setTimeout(() => slides[current].classList.remove('exit'), 450);
     current = Math.max(0, Math.min(idx, slides.length - 1));
     update();
   }
@@ -922,7 +876,6 @@
     if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    { e.preventDefault(); go(current - 1); }
   });
 
-  // Touch / swipe
   let tx = 0;
   document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
   document.addEventListener('touchend',   e => {
