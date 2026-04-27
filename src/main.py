@@ -95,7 +95,7 @@ def run_pipeline(
             source = pdf_input if isinstance(pdf_input, str) else (pdf_input.name if pdf_input else None)
 
         if not source:
-            return None, "No input provided.", "", "", ""
+            return None, "⚠️ No input provided.", "", "", ""
 
         podcast_input = process(source, source_type)
 
@@ -150,7 +150,7 @@ def run_pipeline(
         })
 
         progress(1.0, desc="Done!")
-        return audio_output.file_path, script_text, metadata_text, stats, audio_output.file_path
+        return audio_output.file_path, script_text, metadata_text, stats, str(audio_output.file_path)
 
     except ContentViolationError as e:
         _log_run({
@@ -174,7 +174,7 @@ def run_pipeline(
             "style": style_label,
             "error": str(e),
         })
-        return None, f"Error: {str(e)}", "", "", ""
+        return None, f"❌ Error: {str(e)}", "", "", ""
 
 
 STUDIO_SVG = """
@@ -420,12 +420,14 @@ with gr.Blocks(title="PodcastIQ", css="""
                 outputs=[text_input, url_input, youtube_input, pdf_input],
             )
 
+            gr.Markdown("---")
             gr.Markdown("### Settings")
 
             provider = gr.Radio(
                 choices=["Anthropic (Claude)", "OpenAI (GPT-4o)"],
                 value="Anthropic (Claude)",
-                label="LLM Provider",
+                label="🤖 LLM Provider",
+                info="Choose which AI generates the script",
             )
 
             style = gr.Dropdown(
@@ -447,7 +449,6 @@ with gr.Blocks(title="PodcastIQ", css="""
 
             stats_box = gr.Textbox(label="Stats", interactive=False, lines=1)
             audio_player = gr.Audio(label="Episode Audio", type="filepath")
-            download_btn = gr.File(label="Download MP3")
 
             with gr.Accordion("Episode Metadata", open=True):
                 metadata_box = gr.Textbox(label="", interactive=False, lines=4)
@@ -455,24 +456,24 @@ with gr.Blocks(title="PodcastIQ", css="""
             with gr.Accordion("Full Script", open=False):
                 script_box = gr.Textbox(label="", interactive=False, lines=20)
 
-            with gr.Accordion("Rate this Episode", open=True):
-                gr.Markdown("##### How was the output?")
-                with gr.Row():
-                    transcript_rating = gr.Slider(
-                        minimum=1, maximum=5, step=1, value=3,
-                        label="Transcript quality (1–5)",
-                    )
-                    audio_rating = gr.Slider(
-                        minimum=1, maximum=5, step=1, value=3,
-                        label="Audio quality (1–5)",
-                    )
-                rating_notes = gr.Textbox(
-                    label="Notes (optional)",
-                    placeholder="e.g. Sam sounded too flat, pauses too short...",
-                    lines=2,
+            gr.Markdown("---")
+            gr.Markdown("### Rate this Episode")
+            with gr.Row():
+                transcript_rating = gr.Slider(
+                    minimum=1, maximum=5, step=1, value=3,
+                    label="Transcript quality (1–5)",
                 )
-                rate_btn = gr.Button("Submit Rating", variant="secondary")
-                rating_status = gr.Textbox(label="", interactive=False, lines=1)
+                audio_rating = gr.Slider(
+                    minimum=1, maximum=5, step=1, value=3,
+                    label="Audio quality (1–5)",
+                )
+            rating_notes = gr.Textbox(
+                label="Notes (optional)",
+                placeholder="e.g. Sam sounded too flat, pauses too short...",
+                lines=2,
+            )
+            rate_btn = gr.Button("⭐ Submit Rating", variant="secondary", size="lg")
+            rating_status = gr.Textbox(label="", interactive=False, lines=1)
 
     current_audio = gr.State(value="")
 
@@ -480,11 +481,7 @@ with gr.Blocks(title="PodcastIQ", css="""
         fn=run_pipeline,
         inputs=[source_type, text_input, url_input, youtube_input, pdf_input,
                 style, provider, host_a, host_b, duration],
-        outputs=[audio_player, script_box, metadata_box, stats_box, download_btn],
-    ).then(
-        fn=lambda path: path,
-        inputs=[download_btn],
-        outputs=[current_audio],
+        outputs=[audio_player, script_box, metadata_box, stats_box, current_audio],
     )
 
     rate_btn.click(
