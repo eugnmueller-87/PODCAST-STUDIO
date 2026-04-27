@@ -19,6 +19,11 @@ class PodcastStyle(str, Enum):
     DEEP_DIVE = "deep_dive"
 
 
+class LLMProvider(str, Enum):
+    ANTHROPIC = "anthropic"
+    OPENAI = "openai"
+
+
 @dataclass
 class PodcastInput:
     text: str
@@ -53,6 +58,7 @@ class PodcastSettings:
     host_a_name: str = "Alex"
     host_b_name: str = "Sam"
     target_minutes: int = 5
+    llm_provider: LLMProvider = LLMProvider.ANTHROPIC
 
 
 @dataclass

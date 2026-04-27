@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from data_processor import process
 from llm_processor import generate_script
 from tts_generator import synthesise_script
-from models import PodcastSettings, PodcastStyle, SourceType
+from models import LLMProvider, PodcastSettings, PodcastStyle, SourceType
 from content_guard import ContentViolationError
 
 RATINGS_LOG = Path(__file__).parent.parent / "test_audio" / "ratings.csv"
@@ -54,6 +54,11 @@ STYLE_MAP = {
     "Deep Dive": PodcastStyle.DEEP_DIVE,
 }
 
+PROVIDER_MAP = {
+    "Anthropic (Claude)": LLMProvider.ANTHROPIC,
+    "OpenAI (GPT-4o)": LLMProvider.OPENAI,
+}
+
 SOURCE_MAP = {
     "Text": SourceType.TEXT,
     "URL": SourceType.URL,
@@ -69,6 +74,7 @@ def run_pipeline(
     youtube_input,
     pdf_input,
     style_label,
+    provider_label,
     host_a_name,
     host_b_name,
     target_minutes,
@@ -93,18 +99,20 @@ def run_pipeline(
 
         podcast_input = process(source, source_type)
 
+        provider = PROVIDER_MAP[provider_label]
         settings = PodcastSettings(
             style=STYLE_MAP[style_label],
             host_a_name=host_a_name or "Alex",
             host_b_name=host_b_name or "Sam",
             target_minutes=int(target_minutes),
+            llm_provider=provider,
         )
 
-        progress(0.35, desc="Generating script with Claude...")
+        progress(0.35, desc=f"Generating script with {provider_label}...")
         script = generate_script(podcast_input, settings)
 
         progress(0.65, desc="Generating audio...")
-        audio_output = synthesise_script(script, settings)
+        audio_output = synthesise_script(script, settings, provider=provider.value)
 
         script_text = "\n\n".join(
             f"{line.host_name.upper()}: {line.text}" for line in script.lines
@@ -119,11 +127,12 @@ def run_pipeline(
 
         duration_min = round(audio_output.duration_seconds / 60, 1)
         elapsed = round(time.time() - run_start, 1)
-        stats = f"Generated {len(script.lines)} dialogue lines | Audio: {duration_min} min | Source: {podcast_input.word_count} words"
+        stats = f"[{provider_label}] {len(script.lines)} lines | Audio: {duration_min} min | Source: {podcast_input.word_count} words | {elapsed}s"
 
         _log_run({
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": "success",
+            "llm_provider": provider.value,
             "elapsed_seconds": elapsed,
             "source_type": source_type_label,
             "style": style_label,
@@ -147,12 +156,10 @@ def run_pipeline(
         _log_run({
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": "blocked",
+            "llm_provider": provider_label,
             "elapsed_seconds": round(time.time() - run_start, 1),
             "source_type": source_type_label,
             "style": style_label,
-            "host_a": host_a_name or "Alex",
-            "host_b": host_b_name or "Sam",
-            "target_minutes": int(target_minutes),
             "error": str(e),
         })
         return None, f"🚫 Content Blocked\n\n{e}", "", "", ""
@@ -161,12 +168,10 @@ def run_pipeline(
         _log_run({
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": "error",
+            "llm_provider": provider_label,
             "elapsed_seconds": round(time.time() - run_start, 1),
             "source_type": source_type_label,
             "style": style_label,
-            "host_a": host_a_name or "Alex",
-            "host_b": host_b_name or "Sam",
-            "target_minutes": int(target_minutes),
             "error": str(e),
         })
         return None, f"Error: {str(e)}", "", "", ""
@@ -417,6 +422,12 @@ with gr.Blocks(title="PodcastIQ", css="""
 
             gr.Markdown("### Settings")
 
+            provider = gr.Radio(
+                choices=["Anthropic (Claude)", "OpenAI (GPT-4o)"],
+                value="Anthropic (Claude)",
+                label="LLM Provider",
+            )
+
             style = gr.Dropdown(
                 choices=["Educational", "Debate", "News Brief", "Deep Dive"],
                 value="Educational",
@@ -468,7 +479,7 @@ with gr.Blocks(title="PodcastIQ", css="""
     generate_btn.click(
         fn=run_pipeline,
         inputs=[source_type, text_input, url_input, youtube_input, pdf_input,
-                style, host_a, host_b, duration],
+                style, provider, host_a, host_b, duration],
         outputs=[audio_player, script_box, metadata_box, stats_box, download_btn],
     ).then(
         fn=lambda path: path,

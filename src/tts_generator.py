@@ -187,7 +187,7 @@ async def _synthesise_all(
 
 # ── Public entry point ────────────────────────────────────────────────────────
 
-def synthesise_script(script: PodcastScript, settings: PodcastSettings) -> AudioOutput:
+def synthesise_script(script: PodcastScript, settings: PodcastSettings, provider: str = "anthropic") -> AudioOutput:
     host_a = settings.host_a_name.capitalize()
 
     # ElevenLabs for Alex — voice ID is hardcoded, no lookup needed
@@ -211,7 +211,7 @@ def synthesise_script(script: PodcastScript, settings: PodcastSettings) -> Audio
         combined += pause + segment
 
     timestamp = int(time.time())
-    output_path = OUTPUTS_DIR / f"episode_{timestamp}.mp3"
+    output_path = OUTPUTS_DIR / f"episode_{provider}_{timestamp}.mp3"
     combined.export(str(output_path), format="mp3")
 
     return AudioOutput(

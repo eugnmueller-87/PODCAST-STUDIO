@@ -1,13 +1,14 @@
 # QUALITY: 8/10
-# Strengths: clean prompt templating, solid regex parser, safety checks at both ends
+# Strengths: clean prompt templating, solid regex parser, safety checks at both ends, dual-API support
 # Improve: handle API rate limit / retry, stream response for long scripts, add token count logging
 import os
 import re
 from pathlib import Path
 
 import anthropic
+from openai import OpenAI
 
-from models import DialogueLine, EpisodeMetadata, PodcastInput, PodcastScript, PodcastSettings
+from models import DialogueLine, EpisodeMetadata, LLMProvider, PodcastInput, PodcastScript, PodcastSettings
 from humanizer import humanize_script
 from content_guard import check as safety_check
 
@@ -75,21 +76,39 @@ def _parse_script(raw: str, settings: PodcastSettings) -> PodcastScript:
     return PodcastScript(lines=dialogue_lines, metadata=metadata)
 
 
-def generate_script(podcast_input: PodcastInput, settings: PodcastSettings) -> PodcastScript:
-    # Guard — check source content before sending to Claude
-    safety_check(podcast_input.text, context="source input")
-
+def _call_anthropic(prompt: str) -> str:
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    prompt = _build_prompt(podcast_input, settings)
-
     message = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=4096,
         temperature=1.2,
         messages=[{"role": "user", "content": prompt}],
     )
+    return message.content[0].text
 
-    raw = message.content[0].text
+
+def _call_openai(prompt: str) -> str:
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        max_tokens=4096,
+        temperature=1.2,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return response.choices[0].message.content
+
+
+def generate_script(podcast_input: PodcastInput, settings: PodcastSettings) -> PodcastScript:
+    # Guard — check source content before sending to LLM
+    safety_check(podcast_input.text, context="source input")
+
+    prompt = _build_prompt(podcast_input, settings)
+
+    if settings.llm_provider == LLMProvider.OPENAI:
+        raw = _call_openai(prompt)
+    else:
+        raw = _call_anthropic(prompt)
+
     script = _parse_script(raw, settings)
     humanized = humanize_script(script)
 
