@@ -81,7 +81,7 @@ def _call_anthropic(prompt: str) -> str:
     message = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=4096,
-        temperature=1.2,
+        temperature=1.0,  # Anthropic max is 1.0
         messages=[{"role": "user", "content": prompt}],
     )
     return message.content[0].text

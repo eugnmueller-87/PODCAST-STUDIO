@@ -162,8 +162,15 @@ def run_pipeline(
             "style": style_label,
             "error": str(e),
         })
-        msg = f"🚫 Content Blocked\n\n{e}"
-        return gr.update(value=None), "", "", msg, ""
+        blocked_msg = (
+            "🚫 BLOCKED FOR HARMFUL CONTENT\n\n"
+            "This content was flagged and cannot be processed.\n"
+            "PodcastIQ does not allow racism, hate speech, foul language, "
+            "or discrimination of any kind.\n\n"
+            f"Reason: {e}"
+        )
+        # Put the message in script_box (multi-line) so it's fully readable
+        return None, blocked_msg, "", "🚫 Blocked for Harmful Content", ""
 
     except Exception as e:
         _log_run({
@@ -175,7 +182,8 @@ def run_pipeline(
             "style": style_label,
             "error": str(e),
         })
-        return gr.update(value=None), "", "", f"❌ {str(e)}", ""
+        # Put error detail in script_box so users can read the full message
+        return None, f"❌ ERROR\n\n{str(e)}", "", "❌ Generation failed — see script box", ""
 
 
 STUDIO_SVG = """
@@ -450,7 +458,7 @@ with gr.Blocks(title="PodcastIQ") as demo:
             with gr.Accordion("Episode Metadata", open=True):
                 metadata_box = gr.Textbox(label="", interactive=False, lines=4)
 
-            with gr.Accordion("Full Script", open=False):
+            with gr.Accordion("Full Script / Errors", open=True):
                 script_box = gr.Textbox(label="", interactive=False, lines=20)
 
             gr.Markdown("---")
