@@ -1,10 +1,11 @@
 # PodcastIQ — AI Startup & Future Intelligence Podcast Studio
 
-> Drop any article, PDF, or link about AI startups and the future of AI — get a publish-ready two-host podcast episode in under 60 seconds.
+> Drop any article, PDF, YouTube link, or text about AI startups — get a publish-ready two-host podcast episode in under 60 seconds.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Gradio](https://img.shields.io/badge/UI-Gradio-orange.svg)](https://gradio.app/)
-[![Claude](https://img.shields.io/badge/LLM-Claude-blueviolet.svg)](https://anthropic.com/)
+[![Claude](https://img.shields.io/badge/LLM-Claude%20Sonnet-blueviolet.svg)](https://anthropic.com/)
+[![edge-tts](https://img.shields.io/badge/TTS-edge--tts-brightgreen.svg)](https://github.com/rany2/edge-tts)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -15,18 +16,19 @@
 
 ## What It Does
 
-PodcastIQ is a domain-focused automated podcast studio built around one question: **how is AI knowledge reshaping startups and the future of work, business, and society?** Feed it any content — a TechCrunch article, a Y Combinator blog post, an AI research PDF, a YouTube talk — and it returns a fully produced audio episode with two distinct expert hosts, a downloadable MP3, and auto-generated episode metadata.
+PodcastIQ is an automated podcast studio built around one question: **how is AI reshaping startups, work, and society?** Feed it any content — a TechCrunch article, a research PDF, a YouTube talk, or raw notes — and it returns a fully produced audio episode with two distinct expert hosts, a downloadable MP3, and auto-generated episode metadata.
 
-The show format features two recurring hosts: **Alex** (the technical founder perspective) and **Sam** (the business and market perspective). Their contrasting lenses make every episode feel like a genuine conversation rather than a summary read aloud.
+The show features two recurring hosts: **Alex** (British female — the technical deep-diver) and **Sam** (American male — the strategist with dry wit). Their contrasting voices and perspectives make every episode feel like a genuine conversation.
 
 ```
-   INPUT                 PROCESS                   OUTPUT
-┌──────────┐    ┌─────────────────────────┐    ┌──────────────┐
-│ PDF      │    │  1. Extract & clean     │    │ 🎙 MP3 file  │
-│ URL      │───▶│  2. LLM dialogue script │───▶│ 📄 Script    │
-│ YouTube  │    │  3. Voice-per-host TTS  │    │ 🏷 Metadata  │
-│ Text     │    │  4. Stitch & export     │    │ 💰 Cost log  │
-└──────────┘    └─────────────────────────┘    └──────────────┘
+   INPUT                  PROCESS                        OUTPUT
+┌──────────┐    ┌──────────────────────────────┐    ┌────────────────┐
+│ PDF      │    │  1. Extract & clean source   │    │ 🎙 MP3 audio   │
+│ URL      │───▶│  2. Claude writes the script │───▶│ 📄 Full script │
+│ YouTube  │    │  3. Humanizer adds realism   │    │ 🏷 Metadata    │
+│ Text     │    │  4. edge-tts voice per host  │    │ ⭐ Rating log  │
+└──────────┘    │  5. Stitch & export MP3      │    │ 📋 Run log     │
+                └──────────────────────────────┘    └────────────────┘
 ```
 
 ---
@@ -35,24 +37,34 @@ The show format features two recurring hosts: **Alex** (the technical founder pe
 
 ### Core Pipeline
 - **Multi-source ingestion** — PDF upload, article URL scraping, YouTube transcript extraction, raw text paste
-- **Two-host dialogue** — LLM generates a scripted conversation between named hosts with distinct personalities and natural transitions
-- **Voice-per-host TTS** — Each host is rendered with a distinct accent via gTTS; segments are stitched into a single seamless MP3
-- **Episode metadata** — Title, one-sentence summary, topical tags, and estimated listen time generated automatically
+- **Four podcast styles** — Educational, Debate, News Brief, Deep Dive (each with its own prompt)
+- **Claude Sonnet script generation** — temperature 1.2 for natural, varied dialogue
+- **3-layer humanizer** — script-level reactions, openers, self-corrections + Sam's dry humour injections
+- **Distinct voices per host** — Alex: `en-GB-SoniaNeural` (British female), Sam: `en-US-GuyNeural` (American male)
+- **Emotional prosody** — pitch and rate adapt per line (questions rise, excitement speeds up, reflection slows)
+- **Mid-sentence silences** — em-dashes (420ms) and ellipses (700ms) become real pauses in the audio
+- **Episode metadata** — title, one-sentence summary, tags, and estimated listen time
+
+### Output & Logging
+- **`test_audio/`** — all MP3 files land here, named `episode_<timestamp>.mp3`
+- **`test_audio/run_log.jsonl`** — one JSON line per run: inputs, settings, timing, script, metadata, errors
+- **`test_audio/ratings.csv`** — in-app 1–5 star ratings for transcript and audio quality with notes
 
 ### Interface
-- **Gradio UI** with three tabs: Input, Settings, Output
+- Dark studio-themed Gradio UI with illustrated hosts
 - Real-time progress bar through each pipeline stage
-- Full script preview alongside the audio player
-- One-click MP3 download
-- Script preview alongside the audio player
+- Audio player + one-click MP3 download
+- Expandable script and metadata panels
+- Rating accordion to score each episode and leave notes
 
 ### Podcast Styles
+
 | Style | Format |
 |---|---|
-| `educational` | One host teaches, the other asks clarifying questions |
-| `debate` | Hosts argue opposing sides, reach a conclusion |
-| `news_brief` | Crisp co-anchor format, headline-first |
-| `deep_dive` | Long-form exploration with tangents and analogies |
+| `educational` | Alex teaches, Sam asks — structured knowledge transfer |
+| `debate` | Hosts argue opposing sides and reach a conclusion |
+| `news_brief` | Crisp co-anchor format, headline-first, punchy |
+| `deep_dive` | Long-form exploration with tangents, analogies, second-order effects |
 
 ---
 
@@ -61,20 +73,23 @@ The show format features two recurring hosts: **Alex** (the technical founder pe
 ```
 podcast-studio/
 ├── src/
-│   ├── models.py           # Pydantic dataclasses for the pipeline
+│   ├── models.py           # Dataclasses for the pipeline
 │   ├── data_processor.py   # Input handlers: PDF, URL, YouTube, text
-│   ├── llm_processor.py    # Claude script generation via Anthropic API
-│   ├── tts_generator.py    # TTS + audio stitching
-│   └── main.py             # Gradio application entry point
+│   ├── llm_processor.py    # Claude script generation (Anthropic API)
+│   ├── humanizer.py        # Post-generation realism layer (reactions, humour)
+│   ├── tts_generator.py    # edge-tts + prosody + pydub audio stitching
+│   └── main.py             # Gradio UI, run logger, rating saver
 ├── prompts/
-│   ├── educational.txt     # Prompt template — educational style
-│   ├── debate.txt          # Prompt template — debate style
-│   ├── news_brief.txt      # Prompt template — news brief style
-│   └── deep_dive.txt       # Prompt template — deep dive style
-├── outputs/                # Generated audio files and scripts (gitignored)
-├── .env.example            # API key template
+│   ├── educational.txt
+│   ├── debate.txt
+│   ├── news_brief.txt
+│   └── deep_dive.txt
+├── test_audio/             # Generated MP3s, run_log.jsonl, ratings.csv (gitignored)
+├── assets/
+│   └── studio.svg          # Illustrated header for README
+├── PODCAST.ipynb           # One-click launcher (Run All → Gradio opens)
+├── .env.example
 ├── requirements.txt
-├── TODO.md
 └── README.md
 ```
 
@@ -82,11 +97,11 @@ podcast-studio/
 
 ## Quick Start
 
-### 1. Clone and enter the project
+### 1. Clone the repo
 
 ```bash
-git clone <your-repo-url>
-cd podcast-studio
+git clone https://github.com/eugnmueller-87/PODCAST-STUDIO.git
+cd PODCAST-STUDIO
 ```
 
 ### 2. Create and activate a virtual environment
@@ -107,62 +122,56 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Configure API keys
+### 4. Add your API key
 
 ```bash
 cp .env.example .env
-# Open .env and add your Anthropic key
+# Open .env and paste your Anthropic API key
 ```
-
-Required keys:
 
 | Variable | Where to get it |
 |---|---|
 | `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) |
 
-No other keys needed — audio is generated using gTTS (free, no account required).
+No other keys needed — TTS uses Microsoft edge-tts (free, no account required).
 
 ### 5. Launch
+
+**Option A — Jupyter notebook (recommended)**
+
+Open `PODCAST.ipynb` and click **Run All**.
+
+**Option B — terminal**
 
 ```bash
 python src/main.py
 ```
 
-Open the URL printed in the terminal (usually `http://localhost:7860`).
+Open `http://localhost:7860` in your browser.
 
 ---
 
 ## Usage
 
-### Basic flow
-
-1. **Input tab** — paste text, upload a PDF, or enter a URL / YouTube link
-2. **Settings tab** — choose podcast style, host names, voices, target duration
-3. Click **Generate Episode**
-4. **Output tab** — listen, read the script, download the MP3
+1. **Choose source type** — Text, URL, YouTube, or PDF
+2. **Paste / upload your content**
+3. **Pick a podcast style** and set host names + target length
+4. Click **Generate Episode**
+5. Listen, read the script, download the MP3
+6. **Rate the episode** (1–5 stars for transcript and audio) — saved to `test_audio/ratings.csv`
 
 ### Example inputs that work well
 
-- A Wikipedia article URL about any topic
-- A lecture PDF or slide deck
-- A YouTube video URL (transcript is extracted automatically)
+- A TechCrunch or Wired article URL
+- A research paper or slide deck PDF
+- A YouTube talk or interview (transcript extracted automatically)
 - A block of raw notes or bullet points
 
 ---
 
-## API Costs (Approximate)
+## Architecture
 
-| Component | Model / Service | Typical cost per episode |
-|---|---|---|
-| Script generation | Claude Sonnet (8k tokens) | ~$0.03 |
-| Text-to-speech | gTTS (free) | $0.00 |
-| **Total** | | **~$0.03 per episode** |
-
----
-
-## Architecture Deep Dive
-
-### Full pipeline overview
+### Full pipeline
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -172,149 +181,149 @@ Open the URL printed in the terminal (usually `http://localhost:7860`).
                              │
               ┌──────────────▼──────────────┐
               │   Step 1 — data_processor.py │
-              │   Ingest & clean the source  │
+              │   Ingest & normalise source  │
               └──────────────┬──────────────┘
                              │ PodcastInput(text, title, word_count)
               ┌──────────────▼──────────────┐
               │   Step 2 — llm_processor.py  │
               │   Claude generates dialogue  │
+              │   temperature=1.2            │
               └──────────────┬──────────────┘
                              │ PodcastScript(lines, metadata)
               ┌──────────────▼──────────────┐
-              │   Step 3 — tts_generator.py  │
-              │   gTTS + pydub → MP3 file    │
+              │   Step 3 — humanizer.py      │
+              │   Reactions, openers,        │
+              │   self-corrections, humour   │
+              └──────────────┬──────────────┘
+                             │ PodcastScript (humanized)
+              ┌──────────────▼──────────────┐
+              │   Step 4 — tts_generator.py  │
+              │   edge-tts + prosody params  │
+              │   asyncio.gather (parallel)  │
+              │   pydub → MP3               │
               └──────────────┬──────────────┘
                              │ AudioOutput(file_path, duration_seconds)
                              ▼
-                  outputs/episode_<timestamp>.mp3
+              test_audio/episode_<timestamp>.mp3
+              test_audio/run_log.jsonl  ← logged here
 ```
 
 ---
 
 ### Step 1 — Data Ingestion (`src/data_processor.py`)
 
-Accepts four source types and normalises them all into a single `PodcastInput` object:
-
 | Source | How it works |
 |---|---|
-| **Text** | Strips whitespace, counts words, passes straight through |
-| **URL** | `requests` fetches the page, `BeautifulSoup` strips nav/footer/scripts, extracts `<p>` tags longer than 40 chars |
-| **PDF** | `PyPDF2` reads each page, joins extracted text, collapses whitespace |
-| **YouTube** | `youtube-transcript-api` fetches the auto-generated transcript by video ID; falls back to any available language if English isn't found |
-
-All four paths return the same dataclass:
-
-```python
-@dataclass
-class PodcastInput:
-    text: str         # cleaned source content (capped at 8000 chars for the prompt)
-    title: str        # article title, filename, or video ID
-    source_type: SourceType
-    word_count: int
-```
+| **Text** | Strips whitespace, counts words, passes through |
+| **URL** | `requests` fetches the page; `BeautifulSoup` extracts `<p>` tags > 40 chars |
+| **PDF** | `PyPDF2` reads each page, joins and collapses whitespace |
+| **YouTube** | `youtube-transcript-api` fetches transcript by video ID; falls back to any available language |
 
 ---
 
 ### Step 2 — Script Generation (`src/llm_processor.py`)
 
-Sends the cleaned text to **Claude Sonnet (`claude-sonnet-4-6`)** via the Anthropic API.
+- Model: **Claude Sonnet (`claude-sonnet-4-6`)**, temperature **1.2**
+- Style-specific prompt loaded from `prompts/{style}.txt`
+- Template variables: `source_text`, `target_minutes`, `word_count_target`, `host_a_name`, `host_b_name`
+- Target word count: `target_minutes × 150 words/min`
 
-**How the prompt is built:**
-1. A style-specific template is loaded from `prompts/{style}.txt`
-2. The template is filled with `source_text`, `target_minutes`, `word_count_target`, and both host names
-3. Target word count is calculated as `target_minutes × 150 words/min`
-
-**What Claude returns:**
+**Claude returns:**
 ```
 ALEX: Did you see Anthropic just raised $2.75 billion?
-SAM: That's massive. What does that mean for the safety-first approach?
+SAM: That's massive. And somewhere a VC is nodding very seriously right now.
 ...
-TITLE: The AI Funding Race
-SUMMARY: Alex and Sam debate what Anthropic's latest raise means for AI safety.
+TITLE: The AI Funding Race Nobody Saw Coming
+SUMMARY: Alex and Sam unpack what Anthropic's raise means for the safety-first bet.
 TAGS: Anthropic, funding, AI safety, LLM
 DURATION: 5
 ```
 
-**How the response is parsed:**
-- Regex extracts every `ALEX:` / `SAM:` line into a list of `DialogueLine` objects
-- A separate regex pass pulls `TITLE`, `SUMMARY`, `TAGS`, and `DURATION` into `EpisodeMetadata`
-- The result is a `PodcastScript` containing both
+**Prompt styles:**
 
-```python
-@dataclass
-class PodcastScript:
-    lines: list[DialogueLine]      # ordered dialogue turns
-    metadata: EpisodeMetadata      # title, summary, tags, duration
-```
-
-**The 4 prompt styles** each give Claude a different persona:
-
-| Style | Alex | Sam | Format |
-|---|---|---|---|
-| `educational` | Expert teacher | Curious student | Q&A — Sam asks, Alex explains |
-| `debate` | Optimist / advocate | Sceptic / critic | Structured argument with a conclusion |
-| `news_brief` | Co-anchor | Co-anchor | Fast-paced, headline-first |
-| `deep_dive` | Analyst | Analyst | Long-form with second-order effects and tangents |
+| Style | Alex | Sam |
+|---|---|---|
+| `educational` | Expert teacher | Curious student |
+| `debate` | Optimist / advocate | Sceptic / critic |
+| `news_brief` | Lead anchor — facts | Colour anchor — so what |
+| `deep_dive` | Technical researcher | Market strategist |
 
 ---
 
-### Step 3 — Audio Generation (`src/tts_generator.py`)
+### Step 3 — Humanizer (`src/humanizer.py`)
 
-Converts each `DialogueLine` to speech using **gTTS (Google Text-to-Speech)** — free, no API key needed.
+Post-processes Claude's script before audio generation:
 
-**Voice differentiation:**
-- Alex → `tld="com"` (US English accent)
-- Sam → `tld="co.uk"` (British English accent)
-
-**Stitching process:**
-1. Each line is synthesised individually into an `AudioSegment` (via an in-memory buffer, no temp files)
-2. A 400 ms silence pause is inserted between every turn
-3. All segments are concatenated with pydub
-4. The final track is exported as MP3 to `outputs/episode_<timestamp>.mp3`
-5. ffmpeg (bundled via `static-ffmpeg`) handles the MP3 encoding — no system install required
-
-```python
-@dataclass
-class AudioOutput:
-    file_path: str           # absolute path to the MP3
-    duration_seconds: float  # total runtime
-```
+| Layer | What it adds | Probability |
+|---|---|---|
+| Reaction | `"Hmm."` / `"Right."` / `"Wait —"` prepended based on previous line | 45% |
+| Opener | `"You know,"` / `"Here's the thing —"` etc. | 25% |
+| Self-correction | Mid-sentence `" — or, actually, "` / `" — scratch that —"` | 15% |
+| Sam quip | Dry humour appended: `"Classic Silicon Valley — disrupt first, apologise later."` | 30% |
+| Sam self-deprecation | `"— don't fact-check me on that, I'm going from memory."` | 15% |
 
 ---
 
-### Step 4 — Gradio UI (`src/main.py`)
+### Step 4 — Audio Generation (`src/tts_generator.py`)
 
-`gr.Blocks` wires everything together. When **Generate Episode** is clicked:
+**Voices:**
+- Alex → `en-GB-SoniaNeural` (British female)
+- Sam → `en-US-GuyNeural` (American male)
 
-1. `run_pipeline()` is called with all form values
-2. Progress bar updates at 10% (ingestion), 35% (Claude), 65% (audio), 100% (done)
-3. The MP3 path is returned to the audio player and download button
-4. Script text and episode metadata are displayed in expandable accordions
+**Prosody per line** (rate + pitch):
+
+| Trigger | Rate | Pitch |
+|---|---|---|
+| Line ends with `?` | −8% | +10 Hz |
+| Excited words (`wow`, `incredible`, `exactly`…) | +10% | +8 Hz |
+| Thoughtful words (`honestly`, `I'm not sure`…) | −12% | −6 Hz |
+| Emphatic words (`never`, `here's the thing`…) | −5% | +4 Hz |
+| Default | −5% | 0 Hz |
+
+**Mid-sentence silence:**
+- Em-dash `—` → 420 ms silence
+- Ellipsis `...` → 700 ms silence
+
+**Between-turn pauses:**
+- After a question: 300–500 ms
+- Short reaction: 350–600 ms
+- Topic breath (every 5 lines): 1000–1600 ms
+- After long statement: 700–1000 ms
+- Default: 500–850 ms
+
+All lines are synthesised **in parallel** via `asyncio.gather()` — a 20-line episode takes ~4s instead of ~30s.
 
 ---
 
-### Data models (`src/models.py`)
+### Logging (`test_audio/`)
 
-All objects passed between pipeline stages are plain Python dataclasses — no ORM, no serialisation overhead:
-
+**`run_log.jsonl`** — appended on every run:
+```json
+{
+  "timestamp": "2026-04-27 14:32:01",
+  "status": "success",
+  "elapsed_seconds": 22.4,
+  "source_type": "URL",
+  "style": "Deep Dive",
+  "host_a": "Alex",
+  "host_b": "Sam",
+  "target_minutes": 5,
+  "source_words": 842,
+  "dialogue_lines": 18,
+  "audio_duration_min": 4.7,
+  "audio_file": "episode_1234567890.mp3",
+  "title": "...",
+  "summary": "...",
+  "tags": ["..."],
+  "script": "ALEX: ...\n\nSAM: ..."
+}
 ```
-PodcastSettings ──► llm_processor, tts_generator
-PodcastInput    ──► llm_processor
-PodcastScript   ──► tts_generator
-  ├── list[DialogueLine]
-  └── EpisodeMetadata
-AudioOutput     ──► Gradio UI
+
+**`ratings.csv`** — one row per user rating submission:
 ```
-
----
-
-### Why two-host dialogue?
-
-Single-voice monologues are harder to follow aurally. A back-and-forth format:
-- Creates natural "chapter breaks" at every speaker switch
-- Lets one host ask questions the listener is thinking
-- Covers multiple perspectives without sounding like a listicle
-- Sounds dramatically more professional with almost no added complexity
+timestamp, audio_file, transcript_rating, audio_rating, notes
+2026-04-27 14:35:00, episode_1234567890.mp3, 4, 5, "Sam's humour landed well"
+```
 
 ---
 
@@ -324,26 +333,38 @@ Single-voice monologues are harder to follow aurally. A back-and-forth format:
 |---|---|
 | Backend | Python 3.10+ |
 | UI | Gradio 4.x |
-| LLM | Claude Sonnet (Anthropic) |
-| TTS | gTTS (Google Text-to-Speech, free) |
-| Audio processing | pydub + ffmpeg |
+| LLM | Claude Sonnet 4.6 (Anthropic) — temperature 1.2 |
+| TTS | Microsoft edge-tts — neural voices, free |
+| Audio processing | pydub + static-ffmpeg (bundled, no system install) |
 | PDF parsing | PyPDF2 |
 | Web scraping | requests + BeautifulSoup4 |
-| YouTube transcripts | youtube-transcript-api |
-| Data validation | Pydantic v2 |
+| YouTube transcripts | youtube-transcript-api v2 |
 | Config | python-dotenv |
 
 ---
 
-## Development Roadmap
+## API Costs
 
-- [x] Multi-source ingestion pipeline
-- [x] Two-host LLM dialogue generation
-- [x] Voice-per-host TTS + audio stitching
-- [x] Gradio UI with tabs and progress
-- [x] Episode metadata generation
+| Component | Model / Service | Typical cost per episode |
+|---|---|---|
+| Script generation | Claude Sonnet (~8k tokens) | ~$0.03 |
+| Text-to-speech | edge-tts (free) | $0.00 |
+| **Total** | | **~$0.03 per episode** |
+
+---
+
+## Roadmap
+
+- [x] Multi-source ingestion (PDF, URL, YouTube, text)
+- [x] Two-host LLM dialogue — 4 podcast styles
+- [x] Distinct male/female neural voices (edge-tts)
+- [x] Emotional prosody — pitch and rate per line
+- [x] 3-layer humanizer + Sam humour
+- [x] Parallel TTS generation (asyncio)
+- [x] Episode rating UI (1–5 stars, notes)
+- [x] Run log (JSONL) + ratings log (CSV)
 - [ ] Background music mixer (intro/outro jingle)
-- [ ] RSS feed export (publish directly to podcast platforms)
+- [ ] RSS feed export for podcast platforms
 - [ ] Multi-language support
 - [ ] Voice cloning via ElevenLabs
 - [ ] Batch generation mode
@@ -352,7 +373,7 @@ Single-voice monologues are harder to follow aurally. A back-and-forth format:
 
 ## Contributing
 
-Pull requests are welcome. For major changes, open an issue first to discuss what you'd like to change.
+Pull requests are welcome. For major changes, open an issue first.
 
 ---
 
@@ -362,4 +383,4 @@ MIT — see [LICENSE](LICENSE)
 
 ---
 
-*Built at Ironhack — Module 1 Group Project, April 2026*
+*Built at Ironhack — Week 2 Group Project, April 2026*
