@@ -4,10 +4,7 @@ venv/
 __pycache__/
 *.pyc
 outputs/
-test_audio/*.mp3
-test_audio/*.wav
-test_audio/run_log.jsonl
-test_audio/ratings.csv
+# test_audio contents are committed so the team can see all test runs
 gradio_err.txt
 gradio_out.txt
 .DS_Store
