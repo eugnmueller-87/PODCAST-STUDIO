@@ -366,11 +366,7 @@ STUDIO_SVG = """
 </div>
 """
 
-with gr.Blocks(title="PodcastIQ", css="""
-    .gradio-container { background: #2a2440 !important; color: #e0d8f0 !important; }
-    .gr-button-primary { background: linear-gradient(135deg,#ff4da6,#c0392b) !important; border: none !important; font-weight: bold !important; }
-    footer { display: none !important; }
-""") as demo:
+with gr.Blocks(title="PodcastIQ") as demo:
     gr.HTML(STUDIO_SVG)
 
     with gr.Row():
@@ -491,4 +487,12 @@ with gr.Blocks(title="PodcastIQ", css="""
     )
 
 if __name__ == "__main__":
-    demo.launch(theme=gr.themes.Soft(), share=True)
+    demo.launch(
+        theme=gr.themes.Soft(),
+        share=True,
+        css="""
+    .gradio-container { background: #2a2440 !important; color: #e0d8f0 !important; }
+    .gr-button-primary { background: linear-gradient(135deg,#ff4da6,#c0392b) !important; border: none !important; font-weight: bold !important; }
+    footer { display: none !important; }
+""",
+    )
