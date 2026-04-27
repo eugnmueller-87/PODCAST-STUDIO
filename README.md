@@ -3,8 +3,10 @@
 > Drop any article, PDF, YouTube link, or text about AI startups — get a publish-ready two-host podcast episode in under 60 seconds.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Gradio](https://img.shields.io/badge/UI-Gradio-orange.svg)](https://gradio.app/)
+[![Gradio](https://img.shields.io/badge/UI-Gradio%206-orange.svg)](https://gradio.app/)
 [![Claude](https://img.shields.io/badge/LLM-Claude%20Sonnet-blueviolet.svg)](https://anthropic.com/)
+[![GPT-4o](https://img.shields.io/badge/LLM-GPT--4o-412991.svg)](https://openai.com/)
+[![ElevenLabs](https://img.shields.io/badge/TTS-ElevenLabs-black.svg)](https://elevenlabs.io/)
 [![edge-tts](https://img.shields.io/badge/TTS-edge--tts-brightgreen.svg)](https://github.com/rany2/edge-tts)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -18,7 +20,7 @@
 
 PodcastIQ is an automated podcast studio built around one question: **how is AI reshaping startups, work, and society?** Feed it any content — a TechCrunch article, a research PDF, a YouTube talk, or raw notes — and it returns a fully produced audio episode with two distinct expert hosts, a downloadable MP3, and auto-generated episode metadata.
 
-The show features two recurring hosts: **Alex** (British female — the technical deep-diver) and **Sam** (American male — the strategist with dry wit). Their contrasting voices and perspectives make every episode feel like a genuine conversation.
+The show features two recurring hosts: **Alex** (ElevenLabs premium voice — the technical deep-diver) and **Sam** (Microsoft Neural edge-tts, American male — the strategist with dry wit). Their contrasting voices and perspectives make every episode feel like a genuine conversation.
 
 ```
    INPUT                  PROCESS                        OUTPUT
@@ -38,11 +40,12 @@ The show features two recurring hosts: **Alex** (British female — the technica
 ### Core Pipeline
 - **Multi-source ingestion** — PDF upload, article URL scraping, YouTube transcript extraction, raw text paste
 - **Four podcast styles** — Educational, Debate, News Brief, Deep Dive (each with its own prompt)
-- **Claude Sonnet script generation** — temperature 1.2 for natural, varied dialogue
+- **Dual LLM provider** — Claude Sonnet (temp 1.2) or GPT-4o (temp 0.7), selectable in the UI
 - **3-layer humanizer** — script-level reactions, openers, self-corrections + Sam's dry humour injections
-- **Distinct voices per host** — Alex: `en-GB-SoniaNeural` (British female), Sam: `en-US-GuyNeural` (American male)
+- **Premium voices per host** — Alex: ElevenLabs `eleven_v3` (falls back to `en-GB-SoniaNeural`), Sam: `en-US-GuyNeural`
 - **Emotional prosody** — pitch and rate adapt per line (questions rise, excitement speeds up, reflection slows)
 - **Mid-sentence silences** — em-dashes (420ms) and ellipses (700ms) become real pauses in the audio
+- **Content safety guard** — 2-layer check (regex + Claude Haiku) blocks harmful content at input and output
 - **Episode metadata** — title, one-sentence summary, tags, and estimated listen time
 
 ### Output & Logging
@@ -130,11 +133,11 @@ cp .env.example .env
 # Open .env and paste your Anthropic API key
 ```
 
-| Variable | Where to get it |
-|---|---|
-| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) |
-
-No other keys needed — TTS uses Microsoft edge-tts (free, no account required).
+| Variable | Required | Where to get it |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Yes | [console.anthropic.com](https://console.anthropic.com) |
+| `ELEVENLABS_API_KEY` | Optional | [elevenlabs.io](https://elevenlabs.io) — premium voice for Alex (falls back to edge-tts if missing) |
+| `OPENAI_API_KEY` | Optional | [platform.openai.com](https://platform.openai.com/api-keys) — enables GPT-4o as alternative LLM |
 
 ### 5. Launch
 
@@ -268,8 +271,8 @@ Post-processes Claude's script before audio generation:
 ### Step 4 — Audio Generation (`src/tts_generator.py`)
 
 **Voices:**
-- Alex → `en-GB-SoniaNeural` (British female)
-- Sam → `en-US-GuyNeural` (American male)
+- Alex → ElevenLabs REST API, `eleven_v3`, voice ID `DEZHhPbmb8LVZmWufkCh` (falls back to `en-GB-SoniaNeural` if no ElevenLabs key)
+- Sam → `en-US-GuyNeural` via edge-tts (free, always available)
 
 **Prosody per line** (rate + pitch):
 
@@ -367,9 +370,11 @@ timestamp, audio_file, transcript_rating, audio_rating, notes
 | Layer | Technology |
 |---|---|
 | Backend | Python 3.10+ |
-| UI | Gradio 4.x |
-| LLM | Claude Sonnet 4.6 (Anthropic) — temperature 1.2 |
-| TTS | Microsoft edge-tts — neural voices, free |
+| UI | Gradio 6.x |
+| LLM (default) | Claude Sonnet 4.6 (Anthropic) — temperature 1.2 |
+| LLM (alternative) | GPT-4o (OpenAI) — temperature 0.7, selectable in UI |
+| TTS — Alex | ElevenLabs REST API, `eleven_v3` (falls back to edge-tts) |
+| TTS — Sam | Microsoft edge-tts `en-US-GuyNeural` — free |
 | Audio processing | pydub + static-ffmpeg (bundled, no system install) |
 | PDF parsing | PyPDF2 |
 | Web scraping | requests + BeautifulSoup4 |
@@ -383,8 +388,11 @@ timestamp, audio_file, transcript_rating, audio_rating, notes
 | Component | Model / Service | Typical cost per episode |
 |---|---|---|
 | Script generation | Claude Sonnet (~8k tokens) | ~$0.03 |
-| Text-to-speech | edge-tts (free) | $0.00 |
-| **Total** | | **~$0.03 per episode** |
+| Script generation | GPT-4o (~8k tokens) | ~$0.04 |
+| TTS — Alex | ElevenLabs eleven_v3 (~1,500 chars) | ~$0.02 |
+| TTS — Sam | edge-tts (free) | $0.00 |
+| **Total (Claude + ElevenLabs)** | | **~$0.05 per episode** |
+| **Total (Claude + edge-tts fallback)** | | **~$0.03 per episode** |
 
 ---
 
@@ -399,10 +407,11 @@ timestamp, audio_file, transcript_rating, audio_rating, notes
 - [x] Episode rating UI (1–5 stars, notes)
 - [x] Run log (JSONL) + ratings log (CSV)
 - [x] Content safety guard (racism, hate speech, foul language blocked)
+- [x] Dual LLM provider — Claude Sonnet + GPT-4o selectable in UI
+- [x] ElevenLabs premium voice for Alex (with edge-tts fallback)
 - [ ] Background music mixer (intro/outro jingle)
 - [ ] RSS feed export for podcast platforms
 - [ ] Multi-language support
-- [ ] Voice cloning via ElevenLabs
 - [ ] Batch generation mode
 
 ---
