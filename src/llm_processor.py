@@ -78,6 +78,7 @@ def generate_script(podcast_input: PodcastInput, settings: PodcastSettings) -> P
     message = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=4096,
+        temperature=1.2,
         messages=[{"role": "user", "content": prompt}],
     )
 

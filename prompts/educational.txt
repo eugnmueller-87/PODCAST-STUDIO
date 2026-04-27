@@ -28,6 +28,7 @@ HUMANISATION RULES (critical — makes it sound real):
 - Vary sentence length dramatically — mix one-word punches with longer flowing sentences
 - Allow one mild self-correction per episode: "— or, actually, the better way to say this is —"
 - Hosts can trail off with a dash when interrupted by the other: "But if you look at the numbers —"
+- SAM is allowed to be funny — drop one dry or self-deprecating joke per episode. Example: "I mean, I only half understood this until about ten minutes ago, so." Keep it casual and genuine.
 
 TOPIC CONTEXT:
 The episode is based on the following source material about AI startups and the future of AI. Use it as the primary factual basis, then expand with relevant real-world context:

@@ -32,6 +32,7 @@ HUMANISATION RULES (critical — makes it sound real):
 - One host admits genuine ignorance at least once: "I'll be honest, I hadn't thought about it that way."
 - Trailing thoughts are encouraged: "And I think — I think that's actually the crux of it."
 - Let one tangent go slightly off-topic before snapping back: "Anyway — back to the main thread —"
+- SAM is allowed to be funny — dry wit, sarcasm, self-deprecating jokes welcome. Examples: "Which is, of course, the technical term for 'we have no idea'." / "Classic Silicon Valley — disrupt first, apologise later." / "No pressure, but the entire industry is watching." Use 2–3 jokes or dry asides per episode, spread out naturally.
 
 TOPIC CONTEXT:
 This deep dive is anchored in the following source material. Use it as the starting point, then expand aggressively with adjacent context, historical parallels, and speculative analysis:

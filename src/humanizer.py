@@ -25,6 +25,26 @@ SELF_CORRECTIONS = [
     " — no wait, ", " — scratch that — ",
 ]
 
+# Sam-only dry humour injections — appended or prepended to his lines
+SAM_QUIPS = [
+    " Which, honestly, is a sentence I never expected to say on a podcast.",
+    " And yes, I did just compare a startup to a confused golden retriever.",
+    " I mean, no pressure, but the entire industry is watching.",
+    " Which is either genius or completely insane — possibly both.",
+    " And I say that as someone who has read way too many pitch decks.",
+    " Classic Silicon Valley — disrupt first, apologise later.",
+    " Not to be dramatic, but this changes everything. Okay, maybe a little dramatic.",
+    " Which is, of course, the technical term for 'we have no idea either'.",
+    " At this point I just assume every AI startup has a hockey-stick slide.",
+    " And somewhere a VC is nodding very seriously right now.",
+]
+
+SAM_SELF_DEPRECATING = [
+    " — which, full disclosure, I only half understood until about ten minutes ago.",
+    " — and I'm speaking as someone who once called transformers 'fancy autocomplete'.",
+    " — don't fact-check me on that, I'm going from memory.",
+]
+
 
 def _maybe_add_opener(text: str, chance: float = 0.25) -> str:
     if random.random() < chance:
@@ -48,7 +68,6 @@ def _maybe_add_self_correction(text: str, chance: float = 0.15) -> str:
     sentences = re.split(r"(?<=[.!?])\s+", text)
     if len(sentences) < 2:
         return text
-    # Insert a self-correction mid-first-sentence
     words = sentences[0].split()
     if len(words) < 6:
         return text
@@ -56,6 +75,23 @@ def _maybe_add_self_correction(text: str, chance: float = 0.15) -> str:
     correction = random.choice(SELF_CORRECTIONS)
     sentences[0] = " ".join(words[:split_at]) + correction + " ".join(words[split_at:])
     return " ".join(sentences)
+
+
+def _maybe_add_sam_humor(line: DialogueLine, chance: float = 0.30) -> str:
+    """30% chance Sam drops a dry quip; 15% chance he's self-deprecating."""
+    if line.host_name.lower() != "sam":
+        return line.text
+    roll = random.random()
+    if roll < chance:
+        return line.text + random.choice(SAM_QUIPS)
+    if roll < chance + 0.15:
+        # Insert self-deprecating aside before the last sentence
+        sentences = re.split(r"(?<=[.!?])\s+", line.text)
+        if len(sentences) >= 2:
+            aside = random.choice(SAM_SELF_DEPRECATING)
+            sentences[-2] = sentences[-2].rstrip(".!?") + aside + "."
+            return " ".join(sentences)
+    return line.text
 
 
 def humanize_script(script: PodcastScript) -> PodcastScript:
@@ -67,5 +103,8 @@ def humanize_script(script: PodcastScript) -> PodcastScript:
         text = _maybe_add_reaction(text, prev)
         text = _maybe_add_opener(text)
         text = _maybe_add_self_correction(text)
+        # Build a temporary line so _maybe_add_sam_humor sees the host name
+        tmp = DialogueLine(host_name=line.host_name, text=text)
+        text = _maybe_add_sam_humor(tmp)
         humanized.append(DialogueLine(host_name=line.host_name, text=text))
     return PodcastScript(lines=humanized, metadata=script.metadata)
