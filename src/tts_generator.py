@@ -3,6 +3,9 @@ import os
 import time
 from pathlib import Path
 
+import static_ffmpeg
+static_ffmpeg.add_paths()
+
 from gtts import gTTS
 from pydub import AudioSegment
 
