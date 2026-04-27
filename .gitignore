@@ -8,5 +8,7 @@ test_audio/*.mp3
 test_audio/*.wav
 test_audio/run_log.jsonl
 test_audio/ratings.csv
+gradio_err.txt
+gradio_out.txt
 .DS_Store
 .claude/
