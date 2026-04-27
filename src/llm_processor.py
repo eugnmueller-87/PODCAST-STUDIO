@@ -1,0 +1,84 @@
+import os
+import re
+from pathlib import Path
+
+import anthropic
+
+from models import DialogueLine, EpisodeMetadata, PodcastInput, PodcastScript, PodcastSettings
+
+PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
+WORDS_PER_MINUTE = 150
+
+
+def _load_prompt(style: str) -> str:
+    path = PROMPTS_DIR / f"{style}.txt"
+    if not path.exists():
+        raise FileNotFoundError(f"Prompt template not found: {path}")
+    return path.read_text(encoding="utf-8")
+
+
+def _build_prompt(podcast_input: PodcastInput, settings: PodcastSettings) -> str:
+    template = _load_prompt(settings.style.value)
+    word_count_target = settings.target_minutes * WORDS_PER_MINUTE
+    return template.format(
+        source_text=podcast_input.text[:8000],
+        target_minutes=settings.target_minutes,
+        word_count_target=word_count_target,
+        host_a_name=settings.host_a_name,
+        host_b_name=settings.host_b_name,
+    )
+
+
+def _parse_script(raw: str, settings: PodcastSettings) -> PodcastScript:
+    dialogue_lines = []
+    metadata = EpisodeMetadata(
+        title="AI Startup Insights",
+        summary="",
+        tags=[],
+        estimated_duration_min=settings.target_minutes,
+    )
+
+    metadata_block = re.search(r"TITLE:\s*(.+)", raw)
+    if metadata_block:
+        metadata.title = metadata_block.group(1).strip()
+
+    summary_match = re.search(r"SUMMARY:\s*(.+)", raw)
+    if summary_match:
+        metadata.summary = summary_match.group(1).strip()
+
+    tags_match = re.search(r"TAGS:\s*(.+)", raw)
+    if tags_match:
+        metadata.tags = [t.strip() for t in tags_match.group(1).split(",")]
+
+    duration_match = re.search(r"DURATION:\s*(\d+)", raw)
+    if duration_match:
+        metadata.estimated_duration_min = int(duration_match.group(1))
+
+    host_names = [settings.host_a_name.upper(), settings.host_b_name.upper()]
+    pattern = rf"({'|'.join(host_names)}):\s*(.+?)(?=(?:{'|'.join(host_names)}):|TITLE:|$)"
+    matches = re.findall(pattern, raw, re.DOTALL)
+
+    for host, text in matches:
+        cleaned = text.strip().replace("\n", " ")
+        cleaned = re.sub(r"\s+", " ", cleaned)
+        if cleaned:
+            dialogue_lines.append(DialogueLine(host_name=host.capitalize(), text=cleaned))
+
+    if not dialogue_lines:
+        raise ValueError("Could not parse any dialogue lines from the LLM response.")
+
+    return PodcastScript(lines=dialogue_lines, metadata=metadata)
+
+
+def generate_script(podcast_input: PodcastInput, settings: PodcastSettings) -> PodcastScript:
+    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    prompt = _build_prompt(podcast_input, settings)
+
+    message = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=4096,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    raw = message.content[0].text
+    return _parse_script(raw, settings)
