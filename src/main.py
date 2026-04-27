@@ -1,5 +1,7 @@
+import csv
 import os
 import sys
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -12,6 +14,26 @@ from data_processor import process
 from llm_processor import generate_script
 from tts_generator import synthesise_script
 from models import PodcastSettings, PodcastStyle, SourceType
+
+RATINGS_LOG = Path(__file__).parent.parent / "test_audio" / "ratings.csv"
+
+
+def save_rating(transcript_rating, audio_rating, notes, audio_path):
+    RATINGS_LOG.parent.mkdir(exist_ok=True)
+    is_new = not RATINGS_LOG.exists()
+    with open(RATINGS_LOG, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if is_new:
+            writer.writerow(["timestamp", "audio_file", "transcript_rating", "audio_rating", "notes"])
+        writer.writerow([
+            time.strftime("%Y-%m-%d %H:%M:%S"),
+            Path(audio_path).name if audio_path else "",
+            transcript_rating,
+            audio_rating,
+            notes or "",
+        ])
+    return f"✓ Rating saved — transcript: {transcript_rating}/5 · audio: {audio_rating}/5"
+
 
 STYLE_MAP = {
     "Educational": PodcastStyle.EDUCATIONAL,
@@ -364,11 +386,42 @@ with gr.Blocks(title="PodcastIQ", css="""
             with gr.Accordion("Full Script", open=False):
                 script_box = gr.Textbox(label="", interactive=False, lines=20)
 
+            with gr.Accordion("Rate this Episode", open=True):
+                gr.Markdown("##### How was the output?")
+                with gr.Row():
+                    transcript_rating = gr.Slider(
+                        minimum=1, maximum=5, step=1, value=3,
+                        label="Transcript quality (1–5)",
+                    )
+                    audio_rating = gr.Slider(
+                        minimum=1, maximum=5, step=1, value=3,
+                        label="Audio quality (1–5)",
+                    )
+                rating_notes = gr.Textbox(
+                    label="Notes (optional)",
+                    placeholder="e.g. Sam sounded too flat, pauses too short...",
+                    lines=2,
+                )
+                rate_btn = gr.Button("Submit Rating", variant="secondary")
+                rating_status = gr.Textbox(label="", interactive=False, lines=1)
+
+    current_audio = gr.State(value="")
+
     generate_btn.click(
         fn=run_pipeline,
         inputs=[source_type, text_input, url_input, youtube_input, pdf_input,
                 style, host_a, host_b, duration],
         outputs=[audio_player, script_box, metadata_box, stats_box, download_btn],
+    ).then(
+        fn=lambda path: path,
+        inputs=[download_btn],
+        outputs=[current_audio],
+    )
+
+    rate_btn.click(
+        fn=save_rating,
+        inputs=[transcript_rating, audio_rating, rating_notes, current_audio],
+        outputs=[rating_status],
     )
 
 if __name__ == "__main__":

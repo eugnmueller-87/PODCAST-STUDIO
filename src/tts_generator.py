@@ -14,7 +14,7 @@ from pydub import AudioSegment
 
 from models import AudioOutput, DialogueLine, PodcastScript, PodcastSettings
 
-OUTPUTS_DIR = Path(__file__).parent.parent / "outputs"
+OUTPUTS_DIR = Path(__file__).parent.parent / "test_audio"
 OUTPUTS_DIR.mkdir(exist_ok=True)
 
 HOST_A_VOICE = "en-GB-SoniaNeural"   # Alex — British female
