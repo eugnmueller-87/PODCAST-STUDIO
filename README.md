@@ -63,7 +63,7 @@ podcast-studio/
 ├── src/
 │   ├── models.py           # Pydantic dataclasses for the pipeline
 │   ├── data_processor.py   # Input handlers: PDF, URL, YouTube, text
-│   ├── llm_processor.py    # OpenAI/Anthropic script generation
+│   ├── llm_processor.py    # Claude script generation via Anthropic API
 │   ├── tts_generator.py    # TTS + audio stitching
 │   └── main.py             # Gradio application entry point
 ├── prompts/
@@ -162,26 +162,159 @@ Open the URL printed in the terminal (usually `http://localhost:7860`).
 
 ## Architecture Deep Dive
 
-### Data flow
+### Full pipeline overview
 
 ```
-DataProcessor.process(source)
-    └── returns PodcastInput(text, title, source_type, word_count)
-
-LLMProcessor.generate_script(podcast_input, style, settings)
-    └── returns PodcastScript(segments=[DialogueLine(host, text), ...], metadata)
-
-TTSGenerator.synthesise(script)
-    └── returns AudioOutput(file_path, duration_seconds, cost_usd)
+┌─────────────────────────────────────────────────────────────────┐
+│                        Gradio UI (main.py)                      │
+│  Source input → Settings → [Generate Episode] → Audio + Script  │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+              ┌──────────────▼──────────────┐
+              │   Step 1 — data_processor.py │
+              │   Ingest & clean the source  │
+              └──────────────┬──────────────┘
+                             │ PodcastInput(text, title, word_count)
+              ┌──────────────▼──────────────┐
+              │   Step 2 — llm_processor.py  │
+              │   Claude generates dialogue  │
+              └──────────────┬──────────────┘
+                             │ PodcastScript(lines, metadata)
+              ┌──────────────▼──────────────┐
+              │   Step 3 — tts_generator.py  │
+              │   gTTS + pydub → MP3 file    │
+              └──────────────┬──────────────┘
+                             │ AudioOutput(file_path, duration_seconds)
+                             ▼
+                  outputs/episode_<timestamp>.mp3
 ```
+
+---
+
+### Step 1 — Data Ingestion (`src/data_processor.py`)
+
+Accepts four source types and normalises them all into a single `PodcastInput` object:
+
+| Source | How it works |
+|---|---|
+| **Text** | Strips whitespace, counts words, passes straight through |
+| **URL** | `requests` fetches the page, `BeautifulSoup` strips nav/footer/scripts, extracts `<p>` tags longer than 40 chars |
+| **PDF** | `PyPDF2` reads each page, joins extracted text, collapses whitespace |
+| **YouTube** | `youtube-transcript-api` fetches the auto-generated transcript by video ID; falls back to any available language if English isn't found |
+
+All four paths return the same dataclass:
+
+```python
+@dataclass
+class PodcastInput:
+    text: str         # cleaned source content (capped at 8000 chars for the prompt)
+    title: str        # article title, filename, or video ID
+    source_type: SourceType
+    word_count: int
+```
+
+---
+
+### Step 2 — Script Generation (`src/llm_processor.py`)
+
+Sends the cleaned text to **Claude Sonnet (`claude-sonnet-4-6`)** via the Anthropic API.
+
+**How the prompt is built:**
+1. A style-specific template is loaded from `prompts/{style}.txt`
+2. The template is filled with `source_text`, `target_minutes`, `word_count_target`, and both host names
+3. Target word count is calculated as `target_minutes × 150 words/min`
+
+**What Claude returns:**
+```
+ALEX: Did you see Anthropic just raised $2.75 billion?
+SAM: That's massive. What does that mean for the safety-first approach?
+...
+TITLE: The AI Funding Race
+SUMMARY: Alex and Sam debate what Anthropic's latest raise means for AI safety.
+TAGS: Anthropic, funding, AI safety, LLM
+DURATION: 5
+```
+
+**How the response is parsed:**
+- Regex extracts every `ALEX:` / `SAM:` line into a list of `DialogueLine` objects
+- A separate regex pass pulls `TITLE`, `SUMMARY`, `TAGS`, and `DURATION` into `EpisodeMetadata`
+- The result is a `PodcastScript` containing both
+
+```python
+@dataclass
+class PodcastScript:
+    lines: list[DialogueLine]      # ordered dialogue turns
+    metadata: EpisodeMetadata      # title, summary, tags, duration
+```
+
+**The 4 prompt styles** each give Claude a different persona:
+
+| Style | Alex | Sam | Format |
+|---|---|---|---|
+| `educational` | Expert teacher | Curious student | Q&A — Sam asks, Alex explains |
+| `debate` | Optimist / advocate | Sceptic / critic | Structured argument with a conclusion |
+| `news_brief` | Co-anchor | Co-anchor | Fast-paced, headline-first |
+| `deep_dive` | Analyst | Analyst | Long-form with second-order effects and tangents |
+
+---
+
+### Step 3 — Audio Generation (`src/tts_generator.py`)
+
+Converts each `DialogueLine` to speech using **gTTS (Google Text-to-Speech)** — free, no API key needed.
+
+**Voice differentiation:**
+- Alex → `tld="com"` (US English accent)
+- Sam → `tld="co.uk"` (British English accent)
+
+**Stitching process:**
+1. Each line is synthesised individually into an `AudioSegment` (via an in-memory buffer, no temp files)
+2. A 400 ms silence pause is inserted between every turn
+3. All segments are concatenated with pydub
+4. The final track is exported as MP3 to `outputs/episode_<timestamp>.mp3`
+5. ffmpeg (bundled via `static-ffmpeg`) handles the MP3 encoding — no system install required
+
+```python
+@dataclass
+class AudioOutput:
+    file_path: str           # absolute path to the MP3
+    duration_seconds: float  # total runtime
+```
+
+---
+
+### Step 4 — Gradio UI (`src/main.py`)
+
+`gr.Blocks` wires everything together. When **Generate Episode** is clicked:
+
+1. `run_pipeline()` is called with all form values
+2. Progress bar updates at 10% (ingestion), 35% (Claude), 65% (audio), 100% (done)
+3. The MP3 path is returned to the audio player and download button
+4. Script text and episode metadata are displayed in expandable accordions
+
+---
+
+### Data models (`src/models.py`)
+
+All objects passed between pipeline stages are plain Python dataclasses — no ORM, no serialisation overhead:
+
+```
+PodcastSettings ──► llm_processor, tts_generator
+PodcastInput    ──► llm_processor
+PodcastScript   ──► tts_generator
+  ├── list[DialogueLine]
+  └── EpisodeMetadata
+AudioOutput     ──► Gradio UI
+```
+
+---
 
 ### Why two-host dialogue?
 
 Single-voice monologues are harder to follow aurally. A back-and-forth format:
-- Creates natural "chapter breaks" at speaker switches
-- Allows one host to ask questions the listener would ask
-- Enables coverage of multiple perspectives
-- Sounds dramatically more professional with minimal extra complexity
+- Creates natural "chapter breaks" at every speaker switch
+- Lets one host ask questions the listener is thinking
+- Covers multiple perspectives without sounding like a listicle
+- Sounds dramatically more professional with almost no added complexity
 
 ---
 
