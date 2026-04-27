@@ -17,9 +17,17 @@ FORMAT RULES (follow exactly):
 STYLE RULES:
 - Conversational but substantive — not dumbed down
 - Specific over vague: name real companies, real technologies, real numbers when possible
-- Avoid filler phrases like "great question", "absolutely", "certainly"
+- Avoid hollow affirmations like "great question", "absolutely", "certainly", "for sure"
 - Hosts can disagree, push back, or express genuine surprise
 - No bullet-point monologues — keep turns short (2–5 sentences max before the other host responds)
+
+HUMANISATION RULES (critical — makes it sound real):
+- Use contractions everywhere: don't, can't, we're, it's, I've, they've
+- Occasionally start a turn with a short reaction: "Hmm.", "Right.", "Wait —", "Okay, so —"
+- Let hosts think out loud once or twice: "I'm not sure I fully buy that, but —" or "Actually, hang on —"
+- Vary sentence length dramatically — mix one-word punches with longer flowing sentences
+- Allow one mild self-correction per episode: "— or, actually, the better way to say this is —"
+- Hosts can trail off with a dash when interrupted by the other: "But if you look at the numbers —"
 
 TOPIC CONTEXT:
 The episode is based on the following source material about AI startups and the future of AI. Use it as the primary factual basis, then expand with relevant real-world context:

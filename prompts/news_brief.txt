@@ -20,6 +20,13 @@ STYLE RULES:
 - No filler, no hedging, no "we'll have to wait and see" without a specific reason
 - Keep every turn under 3 sentences
 
+HUMANISATION RULES (critical — makes it sound real):
+- Use contractions: it's, that's, we're, don't, hasn't
+- Anchors can show brief genuine surprise: "And this is the part that got me —"
+- Sam can push back on Alex's framing once: "Right, but let's be honest about what this actually means."
+- One dry aside per episode is fine: "Which, if you're keeping score, is not a great look."
+- Short punchy handoffs: "Alex." / "Sam." / "Go." are fine for rapid story transitions
+
 TOPIC CONTEXT:
 The brief covers the following source material. Extract the most newsworthy facts and present them in broadcast order (most significant first):
 

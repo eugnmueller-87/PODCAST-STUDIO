@@ -20,6 +20,14 @@ STYLE RULES:
 - Avoid filler affirmations ("great point", "exactly", "for sure")
 - Keep turns tight: no monologues longer than 4 sentences
 
+HUMANISATION RULES (critical — makes it sound real):
+- Use contractions throughout: don't, can't, I've, we're, it's, they'd
+- Hosts occasionally cut in: "— okay but that's exactly the problem —"
+- Let frustration show: "No, that's — that's not what I'm saying at all."
+- Short punchy retorts are fine: "Prove it." / "That's the bet." / "Come on."
+- One host can genuinely change their mind mid-argument: "Okay, I'll give you that."
+- Vary pace: rapid short exchanges followed by a longer analytical turn
+
 TOPIC CONTEXT:
 The debate is grounded in the following source material. Use the facts and arguments from it as the raw material for both sides:
 

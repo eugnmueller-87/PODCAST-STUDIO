@@ -5,6 +5,7 @@ from pathlib import Path
 import anthropic
 
 from models import DialogueLine, EpisodeMetadata, PodcastInput, PodcastScript, PodcastSettings
+from humanizer import humanize_script
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 WORDS_PER_MINUTE = 150
@@ -81,4 +82,5 @@ def generate_script(podcast_input: PodcastInput, settings: PodcastSettings) -> P
     )
 
     raw = message.content[0].text
-    return _parse_script(raw, settings)
+    script = _parse_script(raw, settings)
+    return humanize_script(script)
