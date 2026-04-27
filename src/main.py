@@ -318,6 +318,7 @@ with gr.Blocks(title="PodcastIQ", css="""
                 label="Upload PDF",
                 file_types=[".pdf"],
                 visible=False,
+                scale=0,
             )
 
             def toggle_inputs(choice):
@@ -325,7 +326,7 @@ with gr.Blocks(title="PodcastIQ", css="""
                     gr.update(visible=choice == "Text"),
                     gr.update(visible=choice == "URL"),
                     gr.update(visible=choice == "YouTube"),
-                    gr.update(visible=choice == "PDF"),
+                    gr.update(visible=choice == "PDF", scale=1 if choice == "PDF" else 0),
                 )
 
             source_type.change(
