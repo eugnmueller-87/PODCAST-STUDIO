@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 import sys
 import time
@@ -16,6 +17,13 @@ from tts_generator import synthesise_script
 from models import PodcastSettings, PodcastStyle, SourceType
 
 RATINGS_LOG = Path(__file__).parent.parent / "test_audio" / "ratings.csv"
+RUN_LOG = Path(__file__).parent.parent / "test_audio" / "run_log.jsonl"
+
+
+def _log_run(entry: dict):
+    RUN_LOG.parent.mkdir(exist_ok=True)
+    with open(RUN_LOG, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
 def save_rating(transcript_rating, audio_rating, notes, audio_path):
@@ -62,6 +70,7 @@ def run_pipeline(
     target_minutes,
     progress=gr.Progress(),
 ):
+    run_start = time.time()
     try:
         source_type = SOURCE_MAP[source_type_label]
 
@@ -105,12 +114,43 @@ def run_pipeline(
         )
 
         duration_min = round(audio_output.duration_seconds / 60, 1)
+        elapsed = round(time.time() - run_start, 1)
         stats = f"Generated {len(script.lines)} dialogue lines | Audio: {duration_min} min | Source: {podcast_input.word_count} words"
+
+        _log_run({
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": "success",
+            "elapsed_seconds": elapsed,
+            "source_type": source_type_label,
+            "style": style_label,
+            "host_a": host_a_name or "Alex",
+            "host_b": host_b_name or "Sam",
+            "target_minutes": int(target_minutes),
+            "source_words": podcast_input.word_count,
+            "dialogue_lines": len(script.lines),
+            "audio_duration_min": duration_min,
+            "audio_file": Path(audio_output.file_path).name,
+            "title": script.metadata.title,
+            "summary": script.metadata.summary,
+            "tags": script.metadata.tags,
+            "script": script_text,
+        })
 
         progress(1.0, desc="Done!")
         return audio_output.file_path, script_text, metadata_text, stats, audio_output.file_path
 
     except Exception as e:
+        _log_run({
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": "error",
+            "elapsed_seconds": round(time.time() - run_start, 1),
+            "source_type": source_type_label,
+            "style": style_label,
+            "host_a": host_a_name or "Alex",
+            "host_b": host_b_name or "Sam",
+            "target_minutes": int(target_minutes),
+            "error": str(e),
+        })
         return None, f"Error: {str(e)}", "", "", ""
 
 
