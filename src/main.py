@@ -494,4 +494,4 @@ with gr.Blocks(title="PodcastIQ", css="""
     )
 
 if __name__ == "__main__":
-    demo.launch(theme=gr.themes.Soft())
+    demo.launch(theme=gr.themes.Soft(), share=True)
