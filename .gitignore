@@ -1,10 +1,12 @@
 .env
 venv/
+.venv/
 __pycache__/
 *.pyc
-outputs/*.mp3
-outputs/*.wav
-outputs/history.json
+outputs/
+test_audio/*.mp3
+test_audio/*.wav
+test_audio/run_log.jsonl
+test_audio/ratings.csv
 .DS_Store
-.claude/agents/coder.agent.md
-.gitignore
+.claude/
