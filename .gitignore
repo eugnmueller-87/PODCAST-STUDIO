@@ -3,7 +3,7 @@ venv/
 .venv/
 __pycache__/
 *.pyc
-outputs/
+# outputs/ committed so the team can hear all generated episodes
 # test_audio contents are committed so the team can see all test runs
 gradio_err.txt
 gradio_out.txt
