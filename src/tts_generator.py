@@ -19,7 +19,7 @@ from models import AudioOutput, DialogueLine, PodcastScript, PodcastSettings
 OUTPUTS_DIR = Path(__file__).parent.parent / "test_audio"
 OUTPUTS_DIR.mkdir(exist_ok=True)
 
-HOST_A_VOICE_ID = "NOpBlnGInO9m6vDvFkFC"  # Alex — ElevenLabs "Spuds Oxley" / Social Media
+HOST_A_VOICE_ID = "DEZHhPbmb8LVZmWufkCh"  # Alex — ElevenLabs custom voice
 HOST_A_FALLBACK = "en-GB-SoniaNeural"      # fallback if no ElevenLabs key
 HOST_B_VOICE = "en-US-GuyNeural"           # Sam — American male (edge-tts)
 
