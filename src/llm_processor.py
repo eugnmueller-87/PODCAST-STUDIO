@@ -76,38 +76,44 @@ def _parse_script(raw: str, settings: PodcastSettings) -> PodcastScript:
     return PodcastScript(lines=dialogue_lines, metadata=metadata)
 
 
-def _call_anthropic(prompt: str) -> str:
+ANTHROPIC_DEFAULT_TEMP = 1.0   # max allowed by Anthropic API
+OPENAI_DEFAULT_TEMP = 0.7      # GPT-4o stays on-format at 0.7
+
+
+def _call_anthropic(prompt: str, temperature: float) -> str:
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     message = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=4096,
-        temperature=1.0,  # Anthropic max is 1.0
+        temperature=min(temperature, 1.0),  # clamp — Anthropic max is 1.0
         messages=[{"role": "user", "content": prompt}],
     )
     return message.content[0].text
 
 
-def _call_openai(prompt: str) -> str:
+def _call_openai(prompt: str, temperature: float) -> str:
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     response = client.chat.completions.create(
         model="gpt-4o",
         max_tokens=4096,
-        temperature=0.7,  # GPT-4o stays consistent and on-format at 0.7
+        temperature=temperature,
         messages=[{"role": "user", "content": prompt}],
     )
     return response.choices[0].message.content
 
 
-def generate_script(podcast_input: PodcastInput, settings: PodcastSettings) -> PodcastScript:
+def generate_script(podcast_input: PodcastInput, settings: PodcastSettings, temperature: float | None = None) -> PodcastScript:
     # Guard — check source content before sending to LLM
     safety_check(podcast_input.text, context="source input")
 
     prompt = _build_prompt(podcast_input, settings)
 
     if settings.llm_provider == LLMProvider.OPENAI:
-        raw = _call_openai(prompt)
+        temp = temperature if temperature is not None else OPENAI_DEFAULT_TEMP
+        raw = _call_openai(prompt, temp)
     else:
-        raw = _call_anthropic(prompt)
+        temp = temperature if temperature is not None else ANTHROPIC_DEFAULT_TEMP
+        raw = _call_anthropic(prompt, temp)
 
     script = _parse_script(raw, settings)
     humanized = humanize_script(script)

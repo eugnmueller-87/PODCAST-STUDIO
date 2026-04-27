@@ -75,6 +75,7 @@ def run_pipeline(
     pdf_input,
     style_label,
     provider_label,
+    temperature,
     host_a_name,
     host_b_name,
     target_minutes,
@@ -108,8 +109,8 @@ def run_pipeline(
             llm_provider=provider,
         )
 
-        progress(0.35, desc=f"Generating script with {provider_label}...")
-        script = generate_script(podcast_input, settings)
+        progress(0.35, desc=f"Generating script with {provider_label} (temp={temperature})...")
+        script = generate_script(podcast_input, settings, temperature=float(temperature))
 
         progress(0.65, desc="Generating audio...")
         audio_output = synthesise_script(script, settings, provider=provider.value)
@@ -127,12 +128,13 @@ def run_pipeline(
 
         duration_min = round(audio_output.duration_seconds / 60, 1)
         elapsed = round(time.time() - run_start, 1)
-        stats = f"[{provider_label}] {len(script.lines)} lines | Audio: {duration_min} min | Source: {podcast_input.word_count} words | {elapsed}s"
+        stats = f"[{provider_label} t={temperature}] {len(script.lines)} lines | Audio: {duration_min} min | {elapsed}s"
 
         _log_run({
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": "success",
             "llm_provider": provider.value,
+            "temperature": float(temperature),
             "elapsed_seconds": elapsed,
             "source_type": source_type_label,
             "style": style_label,
@@ -435,6 +437,17 @@ with gr.Blocks(title="PodcastIQ") as demo:
                 info="Choose which AI generates the script",
             )
 
+            temperature = gr.Slider(
+                minimum=0.1, maximum=1.0, value=1.0, step=0.1,
+                label="Temperature",
+                info="Anthropic max: 1.0 · OpenAI recommended: 0.7",
+            )
+
+            def update_temperature(p):
+                return gr.update(value=1.0 if p == "Anthropic (Claude)" else 0.7)
+
+            provider.change(update_temperature, inputs=provider, outputs=temperature)
+
             style = gr.Dropdown(
                 choices=["Educational", "Debate", "News Brief", "Deep Dive"],
                 value="Educational",
@@ -485,7 +498,7 @@ with gr.Blocks(title="PodcastIQ") as demo:
     generate_btn.click(
         fn=run_pipeline,
         inputs=[source_type, text_input, url_input, youtube_input, pdf_input,
-                style, provider, host_a, host_b, duration],
+                style, provider, temperature, host_a, host_b, duration],
         outputs=[audio_player, script_box, metadata_box, stats_box, current_audio],
     )
 
