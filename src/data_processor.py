@@ -84,8 +84,15 @@ def _extract_youtube_id(url: str) -> str:
 
 def process_youtube(url: str) -> PodcastInput:
     video_id = _extract_youtube_id(url)
-    transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
-    text = " ".join(entry["text"] for entry in transcript_list)
+    api = YouTubeTranscriptApi()
+    try:
+        transcript = api.fetch(video_id)
+    except Exception:
+        # fall back to any available language
+        listings = api.list(video_id)
+        first = next(iter(listings))
+        transcript = first.fetch()
+    text = " ".join(snippet.text for snippet in transcript)
     text = re.sub(r"\s+", " ", text).strip()
 
     if not text:

@@ -9,6 +9,10 @@
 
 ---
 
+![PodcastIQ Studio](assets/studio.svg)
+
+---
+
 ## What It Does
 
 PodcastIQ is a domain-focused automated podcast studio built around one question: **how is AI knowledge reshaping startups and the future of work, business, and society?** Feed it any content — a TechCrunch article, a Y Combinator blog post, an AI research PDF, a YouTube talk — and it returns a fully produced audio episode with two distinct expert hosts, a downloadable MP3, and auto-generated episode metadata.
