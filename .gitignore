@@ -9,3 +9,8 @@ gradio_err.txt
 gradio_out.txt
 .DS_Store
 .claude/
+post-projext review context
+.gradio/certificate.pem
+test_audio/episode_openai_1777367404.mp3
+test_audio/run_log.jsonl
+.gitignore
