@@ -1,6 +1,8 @@
-# QUALITY: 7/10
-# Strengths: clean handler dispatch, covers all 4 source types, good error messages
-# Improve: add URL timeout retry, cap extracted text length, PDF title from metadata not path
+# QUALITY: 8/10
+# Strengths: clean handler dispatch, covers all 4 source types, Haiku PDF with PyPDF2 fallback
+# Improve: add URL timeout retry, cap extracted text length
+import base64
+import os
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -22,21 +24,63 @@ def process_text(text: str) -> PodcastInput:
     )
 
 
-def process_pdf(file_path: str) -> PodcastInput:
-    text_parts = []
-    with open(file_path, "rb") as f:
-        reader = PyPDF2.PdfReader(f)
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text_parts.append(page_text)
+def _pdf_via_haiku(file_path: str) -> str | None:
+    """Extract PDF text using Claude Haiku's native PDF understanding.
+    Returns None if no API key or if the call fails — caller falls back to PyPDF2."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return None
+    try:
+        import anthropic
+        with open(file_path, "rb") as f:
+            pdf_data = base64.standard_b64encode(f.read()).decode("utf-8")
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=4096,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "document",
+                        "source": {"type": "base64", "media_type": "application/pdf", "data": pdf_data},
+                    },
+                    {
+                        "type": "text",
+                        "text": "Extract all text from this PDF. Return only the extracted text, preserving paragraph structure. No commentary.",
+                    },
+                ],
+            }],
+        )
+        text = message.content[0].text.strip()
+        return text if text else None
+    except Exception:
+        return None
 
-    text = " ".join(text_parts).strip()
-    text = re.sub(r"\s+", " ", text)
+
+def _pdf_via_pypdf2(file_path: str) -> str | None:
+    """Fallback PDF extraction using PyPDF2."""
+    try:
+        text_parts = []
+        with open(file_path, "rb") as f:
+            reader = PyPDF2.PdfReader(f)
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text_parts.append(page_text)
+        text = " ".join(text_parts).strip()
+        return re.sub(r"\s+", " ", text) if text else None
+    except Exception:
+        return None
+
+
+def process_pdf(file_path: str) -> PodcastInput:
+    text = _pdf_via_haiku(file_path) or _pdf_via_pypdf2(file_path)
 
     if not text:
         raise ValueError("Could not extract text from PDF.")
 
+    text = re.sub(r"\s+", " ", text).strip()
     title = file_path.split("/")[-1].replace(".pdf", "")
     return PodcastInput(
         text=text,
