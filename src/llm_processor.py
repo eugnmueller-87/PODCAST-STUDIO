@@ -38,7 +38,7 @@ def _build_prompt(podcast_input: PodcastInput, settings: PodcastSettings) -> str
 def _parse_script(raw: str, settings: PodcastSettings) -> PodcastScript:
     dialogue_lines = []
     metadata = EpisodeMetadata(
-        title="AI Startup Insights",
+        title="Episode",
         summary="",
         tags=[],
         estimated_duration_min=settings.target_minutes,

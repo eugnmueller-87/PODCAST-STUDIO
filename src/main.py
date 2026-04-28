@@ -207,7 +207,7 @@ def run_pipeline(
 STUDIO_SVG = """
 <div style="background:linear-gradient(160deg,#2d2640 0%,#1e1a30 100%);border-radius:16px;padding:20px 24px 12px;margin-bottom:20px;text-align:center;border:1px solid #4a3f6a;">
   <div style="font-size:2rem;font-weight:900;color:#fff;letter-spacing:3px;text-shadow:0 0 20px #ff4da6;">🎙️ PodcastIQ</div>
-  <div style="color:#c4b8e8;font-size:0.9rem;margin-top:4px;margin-bottom:16px;letter-spacing:1px;">Turn any content about AI into a two-host podcast episode</div>
+  <div style="color:#c4b8e8;font-size:0.9rem;margin-top:4px;margin-bottom:16px;letter-spacing:1px;">Turn any content into a two-host podcast episode</div>
   <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" style="max-width:780px;width:100%;">
     <defs>
       <radialGradient id="bgG" cx="50%" cy="35%" r="55%">
