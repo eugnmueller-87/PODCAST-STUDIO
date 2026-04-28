@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PodcastIQ — Technical One-Pager</title>
+<style>
+  :root {
+    --accent:  #5b4fcf;
+    --accent2: #e8436a;
+    --accent3: #0ea87a;
+    --gold:    #d4960a;
+    --text:    #1a1a2e;
+    --muted:   #6b7280;
+    --border:  #e2e4ed;
+    --bg:      #f5f6fa;
+    --card:    #ffffff;
+    --r:       11px;
+    --shadow:  0 2px 12px rgba(0,0,0,.07);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @media print {
+    body { background: #fff !important; padding: 0 !important; }
+    .no-print { display: none !important; }
+    .page { box-shadow: none !important; border-radius: 0 !important; }
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 56px;
+  }
+
+  .page {
+    background: var(--card);
+    width: 100%;
+    max-width: 960px;
+    border-radius: 18px;
+    box-shadow: 0 4px 40px rgba(0,0,0,.10);
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--accent) 0%, #7c6ef5 50%, var(--accent2) 100%);
+    color: #fff;
+    padding: 40px 52px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '⚙️';
+    position: absolute;
+    right: 48px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 6.5rem;
+    opacity: .12;
+    line-height: 1;
+  }
+  .header-chip {
+    display: inline-block;
+    background: rgba(255,255,255,.2);
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 40px;
+    padding: 3px 14px;
+    font-size: .72rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  header h1 { font-size: 2.6rem; font-weight: 900; letter-spacing: -.02em; line-height: 1; margin-bottom: 8px; }
+  header .tagline { font-size: .98rem; opacity: .88; max-width: 560px; line-height: 1.55; margin-bottom: 18px; }
+  .team-line { font-size: .82rem; opacity: .72; }
+
+  /* BODY */
+  .body { padding: 38px 52px 48px; }
+
+  /* SECTION */
+  .section { margin-bottom: 32px; }
+  .section-label {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #ede9fc;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 0 0 32px; }
+
+  /* GRIDS */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+
+  /* CARD */
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 16px 16px;
+  }
+  .card h4 { font-size: .88rem; font-weight: 700; margin-bottom: 5px; color: var(--text); }
+  .card p  { font-size: .8rem; color: var(--muted); line-height: 1.55; }
+  .card .sub-label { font-size: .68rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+
+  .card.t-purple { border-top: 3px solid var(--accent); }
+  .card.t-pink   { border-top: 3px solid var(--accent2); }
+  .card.t-teal   { border-top: 3px solid var(--accent3); }
+  .card.t-gold   { border-top: 3px solid var(--gold); }
+
+  /* FLOW */
+  .flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .fstep {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .fstep .ico  { font-size: 1.4rem; display: block; margin-bottom: 5px; }
+  .fstep .ftitle { font-size: .82rem; font-weight: 700; color: var(--text); }
+  .fstep .fsub  { font-size: .7rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+  .farrow { color: var(--accent); font-size: 1.1rem; padding: 0 5px; align-self: center; flex-shrink: 0; }
+
+  /* IO TABLE */
+  .io { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .io-col { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; }
+  .io-col h4 { font-size: .85rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .io-col ul { list-style: none; }
+  .io-col ul li {
+    font-size: .8rem; color: var(--text);
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .io-col ul li:last-child { border-bottom: none; }
+  .io-col ul li .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .dot-in  { background: var(--accent); }
+  .dot-out { background: var(--accent3); }
+
+  /* API TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  th {
+    background: #f8f9fc;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: .72rem;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f5f3ff; }
+  .tbl-wrap { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow); }
+
+  /* COST */
+  .cost-row {
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 10px;
+  }
+  .cost-cell {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .cost-cell .api  { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .cost-cell .amt  { font-size: 1.3rem; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+  .cost-cell .desc { font-size: .68rem; color: var(--muted); line-height: 1.3; }
+  .cost-total {
+    background: linear-gradient(135deg, #ede9fc, #fde8ed);
+    border: 1px solid #c4b8f8;
+    border-radius: var(--r);
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+  }
+  .cost-total .label { font-size: .82rem; font-weight: 700; color: var(--text); }
+  .cost-total .range { font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .b-purple { background: #ede9fc; color: var(--accent);  border-color: #c4b8f8; }
+  .b-pink   { background: #fde8ed; color: var(--accent2); border-color: #f6b0bf; }
+  .b-teal   { background: #d8f5ec; color: var(--accent3); border-color: #86d8bf; }
+  .b-gold   { background: #fef3cd; color: var(--gold);    border-color: #e8c96a; }
+  .b-gray   { background: #f3f4f6; color: var(--muted);   border-color: var(--border); }
+
+  code {
+    background: #f0f1f7;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-size: .8rem;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    color: var(--accent);
+  }
+
+  /* FUNCTIONS */
+  .fn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .fn-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 14px 16px;
+  }
+  .fn-sig {
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: .76rem;
+    color: var(--accent);
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fn-card p { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+  .fn-card .fn-label { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+
+  /* TEAM */
+  .team { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  .member { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; display: flex; align-items: flex-start; gap: 10px; }
+  .member .emo { font-size: 1.5rem; flex-shrink: 0; }
+  .member strong { font-size: .85rem; display: block; margin-bottom: 2px; }
+  .member span { font-size: .74rem; color: var(--muted); line-height: 1.4; display: block; }
+
+  footer { background: var(--bg); border-top: 1px solid var(--border); padding: 16px 52px; display: flex; justify-content: space-between; align-items: center; font-size: .76rem; color: var(--muted); }
+  footer strong { color: var(--text); }
+
+  .print-btn { position: fixed; bottom: 26px; right: 26px; background: var(--accent); color: #fff; border: none; border-radius: 40px; padding: 10px 22px; font-size: .85rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 18px rgba(91,79,207,.35); transition: opacity .2s; z-index: 100; }
+  .print-btn:hover { opacity: .88; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-chip">Technical Reference · v1.0 · April 2026</div>
+    <h1>PodcastIQ — Technical One-Pager</h1>
+    <p class="tagline">APIs, functions, inputs, outputs and cost breakdown for every component of the pipeline.</p>
+    <div class="team-line">Eugen Müller &nbsp;·&nbsp; Markus von Aschoff &nbsp;·&nbsp; Gunter Maximilian Kleber &nbsp;|&nbsp; Ironhack · Week 2</div>
+  </header>
+
+  <div class="body">
+
+    <!-- PIPELINE OVERVIEW -->
+    <div class="section">
+      <div class="section-label">Pipeline — end to end</div>
+      <div class="flow">
+        <div class="fstep">
+          <span class="ico">📥</span>
+          <div class="ftitle">1 · Ingest</div>
+          <div class="fsub"><code style="font-size:.68rem;">data_processor.py</code><br>PDF · URL · YouTube · Text</div>
+        </div>
+        <div class="farrow">→</div>
+        <div class="fstep">
+          <span class="ico">🛡</span>
+          <div class="ftitle">2 · Safety Check</div>
+          <div class="fsub"><code style="font-size:.68rem;">content_guard.py</code><br>Regex + Haiku classifier</div>
+        </div>
+        <div class="farrow">→</div>
+        <div class="fstep">
+          <span class="ico">🧠</span>
+          <div class="ftitle">3 · Script Gen</div>
+          <div class="fsub"><code style="font-size:.68rem;">llm_processor.py</code><br>Claude Sonnet / GPT-4o</div>
+        </div>
+        <div class="farrow">→</div>
+        <div class="fstep">
+          <span class="ico">✨</span>
+          <div class="ftitle">4 · Humanizer</div>
+          <div class="fsub"><code style="font-size:.68rem;">humanizer.py</code><br>Reactions · Openers · Humour</div>
+        </div>
+        <div class="farrow">→</div>
+        <div class="fstep">
+          <span class="ico">🛡</span>
+          <div class="ftitle">5 · Safety Check</div>
+          <div class="fsub"><code style="font-size:.68rem;">content_guard.py</code><br>Output verified</div>
+        </div>
+        <div class="farrow">→</div>
+        <div class="fstep">
+          <span class="ico">🔊</span>
+          <div class="ftitle">6 · TTS + Audio</div>
+          <div class="fsub"><code style="font-size:.68rem;">tts_generator.py</code><br>ElevenLabs · edge-tts · pydub</div>
+        </div>
+        <div class="farrow">→</div>
+        <div class="fstep">
+          <span class="ico">🎵</span>
+          <div class="ftitle">7 · MP3 Out</div>
+          <div class="fsub"><code style="font-size:.68rem;">outputs/</code><br>Logged · Rated</div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- INPUTS & OUTPUTS -->
+    <div class="section">
+      <div class="section-label">Inputs &amp; Outputs</div>
+      <div class="io">
+        <div class="io-col">
+          <h4><span style="color:var(--accent);">→</span> Inputs — what you feed in</h4>
+          <ul>
+            <li><span class="dot dot-in"></span><div><strong>Plain text</strong> — raw notes, bullet points, article body. Stripped and word-counted.</div></li>
+            <li><span class="dot dot-in"></span><div><strong>URL</strong> — any public article. Fetched via <code>requests</code>, cleaned with <code>BeautifulSoup</code> (<code>&lt;p&gt;</code> tags &gt;40 chars).</div></li>
+            <li><span class="dot dot-in"></span><div><strong>PDF</strong> — uploaded file. <strong>Primary:</strong> Claude Haiku reads natively (tables, scanned pages). <strong>Fallback:</strong> PyPDF2.</div></li>
+            <li><span class="dot dot-in"></span><div><strong>YouTube URL</strong> — transcript fetched via <code>youtube-transcript-api</code>, auto-falls back to any available language.</div></li>
+            <li><span class="dot dot-in"></span><div><strong>Settings</strong> — podcast style, host names, target length (mins), LLM provider, temperature.</div></li>
+          </ul>
+        </div>
+        <div class="io-col">
+          <h4><span style="color:var(--accent3);">←</span> Outputs — what you get back</h4>
+          <ul>
+            <li><span class="dot dot-out"></span><div><strong>MP3 file</strong> — stitched stereo audio, saved to <code>outputs/episode_&lt;timestamp&gt;.mp3</code>.</div></li>
+            <li><span class="dot dot-out"></span><div><strong>Full transcript</strong> — labelled dialogue lines (ALEX / SAM), displayed in the UI.</div></li>
+            <li><span class="dot dot-out"></span><div><strong>Episode metadata</strong> — auto-generated title, one-sentence summary, tags, estimated listen time.</div></li>
+            <li><span class="dot dot-out"></span><div><strong>Run log entry</strong> — appended to <code>test_audio/run_log.jsonl</code>: inputs, timing, status, script, settings.</div></li>
+            <li><span class="dot dot-out"></span><div><strong>Rating row</strong> — optional 1–5 star score saved to <code>test_audio/ratings.csv</code> with free-text notes.</div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- APIS -->
+    <div class="section">
+      <div class="section-label">APIs used — when, why, and what they return</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>API / Service</th>
+              <th>When called</th>
+              <th>Model / endpoint</th>
+              <th>Input</th>
+              <th>Output</th>
+              <th>Required</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Anthropic</strong><br><span class="badge b-purple">Claude Sonnet 4.6</span></td>
+              <td>Script generation (primary LLM)</td>
+              <td><code>claude-sonnet-4-6</code><br>max_tokens 4096, temp 1.0</td>
+              <td>Style prompt + source text (≤8 000 chars)</td>
+              <td>Raw dialogue + TITLE / SUMMARY / TAGS / DURATION</td>
+              <td><span class="badge b-purple">Required</span></td>
+            </tr>
+            <tr>
+              <td><strong>Anthropic</strong><br><span class="badge b-gray">Claude Haiku</span></td>
+              <td>① PDF extraction &nbsp; ② Content safety check</td>
+              <td><code>claude-haiku-4-5-20251001</code><br>temp 0, max_tokens 60–4096</td>
+              <td>① PDF bytes (base64 document block) &nbsp; ② Plain text</td>
+              <td>① Extracted text &nbsp; ② SAFE / UNSAFE + reason</td>
+              <td><span class="badge b-gray">Optional*</span></td>
+            </tr>
+            <tr>
+              <td><strong>OpenAI</strong><br><span class="badge b-pink">GPT-4o</span></td>
+              <td>Script generation (alternative LLM, user-selected)</td>
+              <td><code>gpt-4o</code><br>max_tokens 4096, temp 0.7</td>
+              <td>Same style prompt as Anthropic path</td>
+              <td>Raw dialogue + metadata block</td>
+              <td><span class="badge b-pink">Optional</span></td>
+            </tr>
+            <tr>
+              <td><strong>ElevenLabs</strong><br><span class="badge b-gold">eleven_v3</span></td>
+              <td>TTS for Alex (Host A)</td>
+              <td>REST <code>POST /v1/text-to-speech/{voice_id}</code><br>stability 0.75 · similarity 0.90 · style 0.20</td>
+              <td>Plain text segment (split at — and …)</td>
+              <td>MP3 bytes per segment</td>
+              <td><span class="badge b-gray">Optional†</span></td>
+            </tr>
+            <tr>
+              <td><strong>Microsoft edge-tts</strong><br><span class="badge b-teal">GuyNeural</span></td>
+              <td>TTS for Sam (Host B) — always; Alex fallback if no ElevenLabs key</td>
+              <td><code>en-US-GuyNeural</code> / <code>en-GB-SoniaNeural</code><br>SSML rate + pitch per line</td>
+              <td>SSML string with prosody tags</td>
+              <td>MP3 bytes per segment</td>
+              <td><span class="badge b-teal">Free / always</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:8px;">
+        * Haiku fallback to PyPDF2 (PDF) or regex-only (safety guard) if <code>ANTHROPIC_API_KEY</code> is absent. &nbsp;
+        † Alex falls back to <code>en-GB-SoniaNeural</code> (edge-tts) if no <code>ELEVENLABS_API_KEY</code>.
+      </p>
+    </div>
+
+    <hr>
+
+    <!-- KEY FUNCTIONS -->
+    <div class="section">
+      <div class="section-label">Key functions — file · signature · purpose</div>
+      <div class="fn-grid">
+        <div class="fn-card">
+          <div class="fn-label">data_processor.py</div>
+          <code class="fn-sig">process(source, source_type) → PodcastInput</code>
+          <p>Dispatcher — routes to <code>process_pdf</code>, <code>process_url</code>, <code>process_youtube</code>, or <code>process_text</code>. Returns normalised text + word count.</p>
+        </div>
+        <div class="fn-card">
+          <div class="fn-label">data_processor.py</div>
+          <code class="fn-sig">process_pdf(file_path) → PodcastInput</code>
+          <p>Tries Haiku native PDF first (<code>_pdf_via_haiku</code>). Falls back to PyPDF2 (<code>_pdf_via_pypdf2</code>) if key missing or call fails.</p>
+        </div>
+        <div class="fn-card">
+          <div class="fn-label">content_guard.py</div>
+          <code class="fn-sig">check(text, context) → None | raises</code>
+          <p>Layer 1: compiled regex blocklist (instant). Layer 2: Haiku classifier at temp 0. Raises <code>ContentViolationError</code> on violation. Called twice — input and output.</p>
+        </div>
+        <div class="fn-card">
+          <div class="fn-label">llm_processor.py</div>
+          <code class="fn-sig">generate_script(input, settings, temperature) → PodcastScript</code>
+          <p>Builds style prompt, calls Anthropic or OpenAI based on <code>settings.llm_provider</code>, parses raw response into <code>DialogueLine</code> list + <code>EpisodeMetadata</code>, then runs humanizer.</p>
+        </div>
+        <div class="fn-card">
+          <div class="fn-label">humanizer.py</div>
+          <code class="fn-sig">humanize_script(script) → PodcastScript</code>
+          <p>Iterates every line. Probabilistically injects reactions (45%), openers (25%), self-corrections (15%), Sam quips (30%), Sam self-deprecation (15%).</p>
+        </div>
+        <div class="fn-card">
+          <div class="fn-label">tts_generator.py</div>
+          <code class="fn-sig">synthesise_script(script, settings, provider) → AudioOutput</code>
+          <p>Splits lines at — / …, computes prosody params, calls ElevenLabs or edge-tts in parallel (<code>asyncio.gather</code>), stitches segments with dynamic silences via pydub, exports MP3.</p>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- COST BREAKDOWN -->
+    <div class="section">
+      <div class="section-label">Cost per episode — typical 5-minute run</div>
+      <div class="cost-row">
+        <div class="cost-cell">
+          <div class="api">Claude Sonnet</div>
+          <div class="amt">~$0.03</div>
+          <div class="desc">~8 000 tokens in + ~2 000 out<br>Script generation</div>
+        </div>
+        <div class="cost-cell">
+          <div class="api">Claude Haiku</div>
+          <div class="amt">~$0.002</div>
+          <div class="desc">PDF extraction + 2× safety checks (~60 tok each)</div>
+        </div>
+        <div class="cost-cell">
+          <div class="api">GPT-4o</div>
+          <div class="amt">~$0.04</div>
+          <div class="desc">Alternative to Sonnet<br>Same token volume</div>
+        </div>
+        <div class="cost-cell">
+          <div class="api">ElevenLabs</div>
+          <div class="amt">~$0.02</div>
+          <div class="desc">~1 500 chars for Alex<br>eleven_v3 voice</div>
+        </div>
+        <div class="cost-cell">
+          <div class="api">edge-tts</div>
+          <div class="amt">$0.00</div>
+          <div class="desc">Sam (always)<br>Alex fallback — free</div>
+        </div>
+      </div>
+      <div class="cost-total">
+        <div>
+          <div class="label">Total — Claude Sonnet + Haiku + ElevenLabs + edge-tts</div>
+          <div style="font-size:.76rem;color:var(--muted);margin-top:2px;">GPT-4o path adds ~$0.01 vs. Sonnet path</div>
+        </div>
+        <div class="range">~$0.05 / episode</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ENV VARS -->
+    <div class="section">
+      <div class="section-label">Environment variables</div>
+      <div class="g3">
+        <div class="card t-purple">
+          <div class="sub-label">Required</div>
+          <h4><code>ANTHROPIC_API_KEY</code></h4>
+          <p>Powers Claude Sonnet (script), Haiku (PDF + safety guard). Without it the app will not start.</p>
+        </div>
+        <div class="card t-gold">
+          <div class="sub-label">Optional — better voices</div>
+          <h4><code>ELEVENLABS_API_KEY</code></h4>
+          <p>Enables ElevenLabs eleven_v3 for Alex. If missing, Alex falls back to <code>en-GB-SoniaNeural</code> via edge-tts.</p>
+        </div>
+        <div class="card t-pink">
+          <div class="sub-label">Optional — alternative LLM</div>
+          <h4><code>OPENAI_API_KEY</code></h4>
+          <p>Enables GPT-4o as the script generator. Selectable in the UI via the LLM Provider toggle.</p>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- TEAM -->
+    <div class="section" style="margin-bottom:0;">
+      <div class="section-label">The team</div>
+      <div class="team">
+        <div class="member">
+          <div class="emo">🧑‍💻</div>
+          <div><strong>Eugen Müller</strong><span>Core Pipeline &amp; LLM Integration<br>Claude API · GPT-4o · content_guard</span></div>
+        </div>
+        <div class="member">
+          <div class="emo">🎙</div>
+          <div><strong>Markus von Aschoff</strong><span>Audio &amp; Voice Engineering<br>ElevenLabs · edge-tts · Prosody</span></div>
+        </div>
+        <div class="member">
+          <div class="emo">🖥</div>
+          <div><strong>Gunter Maximilian Kleber</strong><span>UI, Logging &amp; QA<br>Gradio 6 · JSONL logging · Ratings</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <footer>
+    <div><strong>PodcastIQ</strong> — Technical Reference · Ironhack Week 2 · April 2026</div>
+    <div>github.com/eugnmueller-87/PODCAST-STUDIO</div>
+  </footer>
+
+</div><!-- /page -->
+
+<button class="print-btn no-print" onclick="window.print()">🖨 Save as PDF</button>
+
+</body>
+</html>
