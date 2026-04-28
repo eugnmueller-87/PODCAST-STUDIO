@@ -95,7 +95,7 @@
 
 **What would change for production:**
 - Written data retention policy agreed with Legal before the first real user accesses the tool
-- Logs store operational metadata only (episode length, provider used) — not the actual content
+- Logs store operational metadata only (episode length, provider used), not the actual content
 - Deletion process in place: user can request their data is removed within a defined timeframe
 - Mandatory for any deployment serving European users under GDPR
 
@@ -106,7 +106,7 @@
 **Current state:**
 - Documentation written for developers, not for the client's day-to-day team
 - No operator guide, no user guide, no defined support process after handoff
-- "Done" was assumed to mean the demo worked — nothing more
+- "Done" was assumed to mean the demo worked, nothing more
 
 **What would change for production:**
 - Handoff package as a formal deliverable, not an afterthought:
@@ -124,8 +124,8 @@
 - Goal: build a tool that generates a podcast episode from any content source in under 60 seconds
 - Success = demo runs without crashing, all four input types work, audio sounds convincing
 - Scope was not formally defined — features were added as ideas came up during development
-- Testing happened ad-hoc, close to the demo — not planned as part of the process
-- Roles and responsibilities within the team were informal — whoever picked up a task, did it
+- Testing happened ad-hoc, close to the demo, not planned as part of the process
+- Roles and responsibilities within the team were informal, whoever picked up a task, did it
 - No agreed Git workflow — commits, branches, and merges were handled inconsistently
 - Questions about cost, security, data handling, and client handoff were out of scope
 
