@@ -130,10 +130,18 @@ async def _synthesise_one(
     if use_elevenlabs and elevenlabs_voice_id and elevenlabs_api_key:
         # ElevenLabs is synchronous — run in executor to avoid blocking
         loop = asyncio.get_event_loop()
-        segments = await asyncio.gather(*[
-            loop.run_in_executor(None, _eleven_segment, chunk, elevenlabs_voice_id, elevenlabs_api_key)
-            for chunk in audio_chunks
-        ])
+        try:
+            segments = await asyncio.gather(*[
+                loop.run_in_executor(None, _eleven_segment, chunk, elevenlabs_voice_id, elevenlabs_api_key)
+                for chunk in audio_chunks
+            ])
+        except Exception as e:
+            # 401 invalid key, quota exceeded, network error — fall back silently
+            print(f"[tts] ElevenLabs failed ({e}) — falling back to {HOST_A_FALLBACK}")
+            segments = await asyncio.gather(*[
+                _edge_segment(chunk, HOST_A_FALLBACK, params)
+                for chunk in audio_chunks
+            ])
     else:
         segments = await asyncio.gather(*[
             _edge_segment(chunk, HOST_A_FALLBACK, params)

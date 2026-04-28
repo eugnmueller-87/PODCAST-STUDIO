@@ -93,7 +93,17 @@ def run_pipeline(
         elif source_type == SourceType.YOUTUBE:
             source = youtube_input
         else:
-            source = pdf_input if isinstance(pdf_input, str) else (pdf_input.name if pdf_input else None)
+            # Gradio 6 returns FileData with .path; older versions used .name or a plain string
+            if isinstance(pdf_input, str):
+                source = pdf_input
+            elif hasattr(pdf_input, "path"):
+                source = pdf_input.path
+            elif hasattr(pdf_input, "name"):
+                source = pdf_input.name
+            elif isinstance(pdf_input, dict):
+                source = pdf_input.get("path") or pdf_input.get("name")
+            else:
+                source = None
 
         if not source:
             return gr.update(value=None), "", "", "⚠️ No input provided.", ""
