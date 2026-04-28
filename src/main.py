@@ -81,6 +81,7 @@ def run_pipeline(
     target_minutes,
     progress=gr.Progress(),
 ):
+    import traceback
     run_start = time.time()
     try:
         source_type = SOURCE_MAP[source_type_label]
@@ -194,8 +195,9 @@ def run_pipeline(
             "style": style_label,
             "error": str(e),
         })
-        # Put error detail in script_box so users can read the full message
-        return None, f"❌ ERROR\n\n{str(e)}", "", "❌ Generation failed — see script box", ""
+        tb = traceback.format_exc()
+        print(f"[pipeline ERROR]\n{tb}")
+        return None, f"❌ ERROR\n\n{str(e)}\n\n{tb}", "", "❌ Generation failed — see script box", ""
 
 
 STUDIO_SVG = """
@@ -518,10 +520,13 @@ with gr.Blocks(title="PodcastIQ") as demo:
         outputs=[rating_status],
     )
 
+OUTPUTS_DIR = Path(__file__).parent.parent / "test_audio"
+
 if __name__ == "__main__":
     demo.launch(
         theme=gr.themes.Soft(),
         share=True,
+        allowed_paths=[str(OUTPUTS_DIR), str(OUTPUTS_DIR.parent / "outputs")],
         css="""
     .gradio-container { background: #2a2440 !important; color: #e0d8f0 !important; }
     .gr-button-primary { background: linear-gradient(135deg,#ff4da6,#c0392b) !important; border: none !important; font-weight: bold !important; }
