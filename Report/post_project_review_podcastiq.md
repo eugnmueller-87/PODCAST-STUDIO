@@ -123,10 +123,10 @@
 
 - Goal: build a tool that generates a podcast episode from any content source in under 60 seconds
 - Success = demo runs without crashing, all four input types work, audio sounds convincing
-- Scope was not formally defined — features were added as ideas came up during development
+- Scope was not formally defined, features were added as ideas came up during development
 - Testing happened ad-hoc, close to the demo, not planned as part of the process
 - Roles and responsibilities within the team were informal, whoever picked up a task, did it
-- No agreed Git workflow — commits, branches, and merges were handled inconsistently
+- No agreed Git workflow, commits, branches, and merges were handled inconsistently
 - Questions about cost, security, data handling, and client handoff were out of scope
 
 ---
@@ -149,7 +149,7 @@
 - For a real project: assign a Product Owner (prioritises features and accepts deliverables), a Tech Lead (owns architecture and code quality), and a QA owner (owns testing sign-off)
 - Every task should have one owner — not a group assumption that someone will handle it
 
-**Git — Standard Operating Procedures / Playbook**
+**Git - Standard Operating Procedures / Playbook**
 - Commits were made directly to main without a consistent branching strategy
 - For a real project: define and follow a simple Git playbook from day one:
   - `main` = stable, demo-ready code only
