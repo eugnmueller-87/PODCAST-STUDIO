@@ -220,7 +220,7 @@ Open `http://localhost:7860` in your browser.
 |---|---|
 | **Text** | Strips whitespace, counts words, passes through |
 | **URL** | `requests` fetches the page; `BeautifulSoup` extracts `<p>` tags > 40 chars |
-| **PDF** | `PyPDF2` reads each page, joins and collapses whitespace |
+| **PDF** | **Primary:** Claude Haiku native PDF understanding (tables, columns, scanned pages via vision). **Fallback:** `PyPDF2` if no `ANTHROPIC_API_KEY` or if the Haiku call fails |
 | **YouTube** | `youtube-transcript-api` fetches transcript by video ID; falls back to any available language |
 
 ---
