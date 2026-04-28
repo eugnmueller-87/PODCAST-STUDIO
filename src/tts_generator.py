@@ -131,8 +131,8 @@ async def _synthesise_one(
             audio_chunks.append(stripped)
 
     if use_elevenlabs and elevenlabs_voice_id and elevenlabs_api_key:
-        # ElevenLabs is synchronous — run in executor to avoid blocking
-        loop = asyncio.get_event_loop()
+        # get_running_loop() is correct inside a coroutine (get_event_loop() is deprecated in 3.12+)
+        loop = asyncio.get_running_loop()
         try:
             segments = await asyncio.gather(*[
                 loop.run_in_executor(None, _eleven_segment, chunk, elevenlabs_voice_id, elevenlabs_api_key)
@@ -143,15 +143,23 @@ async def _synthesise_one(
             global _elevenlabs_fallback_triggered
             _elevenlabs_fallback_triggered = True
             print(f"[tts] ElevenLabs failed ({e}) — falling back to {HOST_A_FALLBACK}")
+            try:
+                segments = await asyncio.gather(*[
+                    _edge_segment(chunk, HOST_A_FALLBACK, params)
+                    for chunk in audio_chunks
+                ])
+            except Exception as edge_e:
+                print(f"[tts] edge-tts fallback also failed ({edge_e}) — returning silence")
+                segments = [AudioSegment.silent(duration=1000)] * len(audio_chunks)
+    else:
+        try:
             segments = await asyncio.gather(*[
                 _edge_segment(chunk, HOST_A_FALLBACK, params)
                 for chunk in audio_chunks
             ])
-    else:
-        segments = await asyncio.gather(*[
-            _edge_segment(chunk, HOST_A_FALLBACK, params)
-            for chunk in audio_chunks
-        ])
+        except Exception as e:
+            print(f"[tts] edge-tts failed ({e}) — returning silence for chunk")
+            segments = [AudioSegment.silent(duration=1000)] * len(audio_chunks)
 
     combined = AudioSegment.empty()
     for kind, value in structure:
@@ -187,7 +195,11 @@ async def _synthesise_all(
                     chunks.append(s)
 
             async def _sam_line(structure=structure, chunks=chunks, params=params):
-                segs = await asyncio.gather(*[_edge_segment(c, HOST_B_VOICE, params) for c in chunks])
+                try:
+                    segs = await asyncio.gather(*[_edge_segment(c, HOST_B_VOICE, params) for c in chunks])
+                except Exception as e:
+                    print(f"[tts] Sam edge-tts failed ({e}) — returning silence")
+                    segs = [AudioSegment.silent(duration=1000)] * len(chunks)
                 out = AudioSegment.empty()
                 for kind, val in structure:
                     out += AudioSegment.silent(duration=val) if kind == "pause" else segs[val]
