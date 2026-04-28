@@ -1,6 +1,8 @@
-# PodcastIQ — AI Startup & Future Intelligence Podcast Studio
+# PodcastIQ — Automated Two-Host Podcast Studio
 
-> Drop any article, PDF, YouTube link, or text about AI startups — get a publish-ready two-host podcast episode in under 60 seconds.
+> Drop any article, PDF, YouTube link, or plain text — get a publish-ready two-host podcast episode in under 60 seconds.
+
+📋 [Post-Project Review & Stakeholder Report](Report/post_project_review_podcastiq.md)
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Gradio](https://img.shields.io/badge/UI-Gradio%206-orange.svg)](https://gradio.app/)
@@ -18,9 +20,9 @@
 
 ## What It Does
 
-PodcastIQ is an automated podcast studio built around one question: **how is AI reshaping startups, work, and society?** Feed it any content — a TechCrunch article, a research PDF, a YouTube talk, or raw notes — and it returns a fully produced audio episode with two distinct expert hosts, a downloadable MP3, and auto-generated episode metadata.
+PodcastIQ is an automated podcast studio that turns any content into a two-host podcast episode. Feed it any source — a news article, a research PDF, a YouTube talk, or raw notes — and it returns a fully produced audio episode with two distinct hosts, a downloadable MP3, and auto-generated episode metadata. The tool adapts to whatever topic the content covers — no subject-matter restrictions.
 
-The show features two recurring hosts: **Alex** (ElevenLabs premium voice — the technical deep-diver) and **Sam** (Microsoft Neural edge-tts, American male — the strategist with dry wit). Their contrasting voices and perspectives make every episode feel like a genuine conversation.
+The show features two recurring hosts: **Alex** (ElevenLabs premium voice — the expert deep-diver) and **Sam** (Microsoft Neural edge-tts, American male — the curious generalist with dry wit). Their contrasting voices and perspectives make every episode feel like a genuine conversation.
 
 ```
    INPUT                  PROCESS                        OUTPUT
@@ -45,6 +47,8 @@ The show features two recurring hosts: **Alex** (ElevenLabs premium voice — th
 - **Premium voices per host** — Alex: ElevenLabs `eleven_v3` (falls back to `en-GB-SoniaNeural`), Sam: `en-US-GuyNeural`
 - **Emotional prosody** — pitch and rate adapt per line (questions rise, excitement speeds up, reflection slows)
 - **Mid-sentence silences** — em-dashes (420ms) and ellipses (700ms) become real pauses in the audio
+- **Topic-agnostic** — all four prompt styles follow the source content; no hardcoded subject area
+- **Voice status feedback** — UI shows which voice was used for Alex and why (ElevenLabs, edge-tts fallback, or no key)
 - **Content safety guard** — 2-layer check (regex + Claude Haiku) blocks harmful content at input and output
 - **Episode metadata** — title, one-sentence summary, tags, and estimated listen time
 
@@ -409,6 +413,9 @@ timestamp, audio_file, transcript_rating, audio_rating, notes
 - [x] Content safety guard (racism, hate speech, foul language blocked)
 - [x] Dual LLM provider — Claude Sonnet + GPT-4o selectable in UI
 - [x] ElevenLabs premium voice for Alex (with edge-tts fallback)
+- [x] Topic-agnostic prompt templates — any subject, not just AI
+- [x] Voice status feedback in Stats panel (which voice, why)
+- [x] Claude Haiku PDF extraction (with PyPDF2 fallback)
 - [ ] Background music mixer (intro/outro jingle)
 - [ ] RSS feed export for podcast platforms
 - [ ] Multi-language support
