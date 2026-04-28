@@ -106,6 +106,9 @@ def _eleven_segment(text: str, voice_id: str, api_key: str) -> AudioSegment:
     return _elevenlabs_synthesise(text, voice_id, api_key)
 
 
+_elevenlabs_fallback_triggered = False  # module-level flag, reset per run
+
+
 async def _synthesise_one(
     line: DialogueLine,
     use_elevenlabs: bool,
@@ -137,6 +140,8 @@ async def _synthesise_one(
             ])
         except Exception as e:
             # 401 invalid key, quota exceeded, network error — fall back silently
+            global _elevenlabs_fallback_triggered
+            _elevenlabs_fallback_triggered = True
             print(f"[tts] ElevenLabs failed ({e}) — falling back to {HOST_A_FALLBACK}")
             segments = await asyncio.gather(*[
                 _edge_segment(chunk, HOST_A_FALLBACK, params)
@@ -195,14 +200,16 @@ async def _synthesise_all(
 
 # ── Public entry point ────────────────────────────────────────────────────────
 
-def synthesise_script(script: PodcastScript, settings: PodcastSettings, provider: str = "anthropic") -> AudioOutput:
+def synthesise_script(script: PodcastScript, settings: PodcastSettings, provider: str = "anthropic") -> tuple["AudioOutput", str]:
+    """Returns (AudioOutput, voice_status_message)."""
+    global _elevenlabs_fallback_triggered
+    _elevenlabs_fallback_triggered = False
+
     host_a = settings.host_a_name.capitalize()
 
-    # ElevenLabs for Alex — voice ID is hardcoded, no lookup needed
     api_key = os.environ.get("ELEVENLABS_API_KEY", "")
     voice_id = HOST_A_VOICE_ID if api_key else None
-    if not api_key:
-        print(f"[tts] No ELEVENLABS_API_KEY — Alex falling back to {HOST_A_FALLBACK}")
+    no_key = not api_key
 
     loop = asyncio.new_event_loop()
     try:
@@ -222,7 +229,11 @@ def synthesise_script(script: PodcastScript, settings: PodcastSettings, provider
     output_path = OUTPUTS_DIR / f"episode_{provider}_{timestamp}.mp3"
     combined.export(str(output_path), format="mp3")
 
-    return AudioOutput(
-        file_path=str(output_path),
-        duration_seconds=len(combined) / 1000.0,
-    )
+    if no_key:
+        voice_status = f"⚠️ Alex voice: {HOST_A_FALLBACK} (no ElevenLabs key set)"
+    elif _elevenlabs_fallback_triggered:
+        voice_status = f"⚠️ Alex voice: {HOST_A_FALLBACK} (ElevenLabs key invalid or expired — update ELEVENLABS_API_KEY in .env)"
+    else:
+        voice_status = f"✅ Alex voice: ElevenLabs eleven_v3"
+
+    return AudioOutput(file_path=str(output_path), duration_seconds=len(combined) / 1000.0), voice_status

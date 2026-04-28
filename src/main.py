@@ -124,7 +124,7 @@ def run_pipeline(
         script = generate_script(podcast_input, settings, temperature=float(temperature))
 
         progress(0.65, desc="Generating audio...")
-        audio_output = synthesise_script(script, settings, provider=provider.value)
+        audio_output, voice_status = synthesise_script(script, settings, provider=provider.value)
 
         script_text = "\n\n".join(
             f"{line.host_name.upper()}: {line.text}" for line in script.lines
@@ -139,7 +139,11 @@ def run_pipeline(
 
         duration_min = round(audio_output.duration_seconds / 60, 1)
         elapsed = round(time.time() - run_start, 1)
-        stats = f"[{provider_label} t={temperature}] {len(script.lines)} lines | Audio: {duration_min} min | {elapsed}s"
+        stats = (
+            f"✅ Done in {elapsed}s  |  {provider_label}  |  temp={temperature}\n"
+            f"🎙 {len(script.lines)} lines  |  ⏱ {duration_min} min audio\n"
+            f"{voice_status}"
+        )
 
         _log_run({
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -477,7 +481,7 @@ with gr.Blocks(title="PodcastIQ") as demo:
         with gr.Column(scale=1):
             gr.Markdown("### Output")
 
-            stats_box = gr.Textbox(label="Stats", interactive=False, lines=1)
+            stats_box = gr.Textbox(label="Stats", interactive=False, lines=3)
             audio_player = gr.Audio(label="Episode Audio", type="filepath")
 
             with gr.Accordion("Episode Metadata", open=True):
